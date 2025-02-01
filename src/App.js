@@ -1,26 +1,41 @@
-// src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+
+// Import components - check these paths match your project structure
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import Dashboard from './components/dashboard/Dashboard';
+import PrivateRoute from './components/auth/PrivateRoute';
 import Navbar from './components/layout/Navbar';
-import Sidebar from './components/layout/Sidebar';
+import Footer from './components/layout/Footer';
 
 function App() {
-  return (
-      <Router>
-        <div className="app">
-          <Navbar />
-          <div className="flex">
-            <Sidebar />
-            <main className="main-content">
-              <Routes>
-                <Route path="/" element={<div>Dashboard</div>} />
-                {/* Add more routes here as you create them */}
-              </Routes>
-            </main>
-          </div>
-        </div>
-      </Router>
-  );
+    return (
+        <AuthProvider>
+            <Router>
+                <div className="flex flex-col min-h-screen">
+                    <Navbar />
+                    <main className="flex-grow">
+                        <Routes>
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    <PrivateRoute>
+                                        <Dashboard />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
+                    </main>
+                    <Footer />
+                </div>
+            </Router>
+        </AuthProvider>
+    );
 }
 
 export default App;
