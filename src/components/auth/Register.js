@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { AlertCircle } from 'lucide-react';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -32,28 +33,12 @@ const Register = () => {
         }
 
         try {
-            // Ensure the name is properly stringified
             const payload = {
-                name: name.trim(), // Remove extra whitespace
+                name: name.trim(),
                 email: email.trim(),
                 password
             };
-
-            console.log('Sending payload:', payload); // Debug log
-
-            const response = await fetch('http://localhost:5000/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload) // Properly stringify the entire payload
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.error || 'Registration failed');
-            }
-
+            await register(payload);
             navigate('/dashboard');
         } catch (error) {
             setError(error.message);
@@ -61,22 +46,31 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
+        <div className="min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-2 text-center text-3xl font-bold text-gray-900">
                         Create your account
                     </h2>
+                    <p className="mt-2 text-center text-sm text-gray-600">
+                        Already have an account?{' '}
+                        <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                            Sign in
+                        </Link>
+                    </p>
                 </div>
+
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                            {error}
+                        <div className="flex items-center p-4 bg-red-50 border-l-4 border-red-500 rounded-md">
+                            <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+                            <p className="text-sm text-red-700">{error}</p>
                         </div>
                     )}
-                    <div className="rounded-md shadow-sm -space-y-px">
+
+                    <div className="space-y-4">
                         <div>
-                            <label htmlFor="name" className="sr-only">
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                                 Full Name
                             </label>
                             <input
@@ -84,14 +78,14 @@ const Register = () => {
                                 name="name"
                                 type="text"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Full Name"
+                                className="mt-1 block w-full px-4 py-3 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="John Doe"
                                 value={name}
                                 onChange={handleChange}
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="sr-only">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                 Email address
                             </label>
                             <input
@@ -99,14 +93,14 @@ const Register = () => {
                                 name="email"
                                 type="email"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
+                                className="mt-1 block w-full px-4 py-3 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="you@example.com"
                                 value={email}
                                 onChange={handleChange}
                             />
                         </div>
                         <div>
-                            <label htmlFor="password" className="sr-only">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                 Password
                             </label>
                             <input
@@ -114,14 +108,14 @@ const Register = () => {
                                 name="password"
                                 type="password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Password"
+                                className="mt-1 block w-full px-4 py-3 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="••••••••"
                                 value={password}
                                 onChange={handleChange}
                             />
                         </div>
                         <div>
-                            <label htmlFor="confirmPassword" className="sr-only">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                                 Confirm Password
                             </label>
                             <input
@@ -129,8 +123,8 @@ const Register = () => {
                                 name="confirmPassword"
                                 type="password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Confirm Password"
+                                className="mt-1 block w-full px-4 py-3 rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                placeholder="••••••••"
                                 value={confirmPassword}
                                 onChange={handleChange}
                             />
@@ -140,9 +134,9 @@ const Register = () => {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                         >
-                            Register
+                            Create Account
                         </button>
                     </div>
                 </form>
