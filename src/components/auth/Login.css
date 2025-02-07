@@ -1,0 +1,71 @@
+/* Login.css */
+.login-page {
+    min-height: 75vh !important;
+    background-color: #1f2937 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+}
+
+.login-container {
+    background-color: #374151 !important;
+    padding: 1.5rem !important;
+    border-radius: 0.5rem !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.login-header {
+    color: #ef4444 !important;
+    text-align: center !important;
+    font-size: 2.5rem !important;
+    font-weight: bold !important;
+    margin-bottom: 1rem !important;
+}
+
+.login-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+}
+
+.form-group label {
+    color: #ef4444 !important;
+    font-size: 0.875rem !important;
+}
+
+.form-group input {
+    padding: 0.5rem !important;
+    border-radius: 0.25rem !important;
+    border: 1px solid #4b5563 !important;
+    background-color: #1f2937 !important;
+    color: white !important;
+}
+#password {
+margin-right: 5rem !important;
+}
+.remember-me {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    color: #ef4444 !important;
+    font-size: 0.875rem !important;
+}
+
+.login-button {
+    background-color: #ef4444 !important;
+    color: white !important;
+    padding: 0.5rem !important;
+    border-radius: 0.25rem !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+    margin-top: 0.5rem !important;
+}
+
+.login-button:hover {
+    background-color: #dc2626 !important;
+}
+

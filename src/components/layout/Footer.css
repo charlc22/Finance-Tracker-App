@@ -1,0 +1,17 @@
+/* Footer.css */
+.footer {
+    background-color: #1f2937;  /* bg-gray-800 equivalent */
+}
+
+.footer-container {
+    margin: 0 auto;  /* mx-auto */
+    height: 4rem;    /* h-16 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-text {
+    color: #ef4444;  /* text-red-500 */
+    font-weight: 500;  /* font-medium */
+}

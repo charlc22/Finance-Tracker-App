@@ -1,0 +1,26 @@
+/* Sidebar.css */
+.sidebar {
+    width: 16rem;  /* w-64 */
+    background-color: #1f2937;  /* bg-gray-800 to match navbar/footer */
+    min-height: 100vh;
+    padding: 1rem;  /* p-4 */
+}
+
+.sidebar-link {
+    display: block;
+    padding: 0.5rem 0.75rem;  /* py-2 px-3 */
+    color: #ef4444;  /* text-red-500 to match */
+    text-decoration: none;
+    border-radius: 0.375rem;  /* rounded */
+    margin-bottom: 0.5rem;  /* mb-2 */
+}
+
+.sidebar-link:hover {
+    background-color: #374151;  /* bg-gray-700 */
+    color: #fca5a5;  /* text-red-300 */
+}
+
+.sidebar-link.active {
+    background-color: #ef4444;  /* bg-red-500 */
+    color: white;
+}
