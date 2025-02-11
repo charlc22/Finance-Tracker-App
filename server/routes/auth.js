@@ -5,49 +5,46 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 require('dotenv').config();
 
-// Register route
 router.post('/register', async (req, res) => {
     try {
-        console.log('Received body:', req.body); // Debug log
-
-        // Validate inputs
-        if (!name || !email || !password) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-
         const { name, email, password } = req.body;
 
-        // Check if user already exists
+        // Check for JWT_SECRET
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET is not configured');
+        }
+
+        // Log the incoming request
+        console.log('Registration attempt:', { name, email });
+
+        // Check if user exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
+            console.log('User already exists:', email);
             return res.status(400).json({ error: 'Email already registered' });
         }
 
-        // Log the incoming data
-        console.log('Received registration data:', {
-            name: name,
-            email: email,
-            // Don't log password for security
-        });
-
-        // Sanitize name
-        const sanitizedName = name.toString().trim();
 
         // Create new user
         const user = new User({
-            name: sanitizedName,
+            name: name.trim(),
             email: email.trim().toLowerCase(),
             password
         });
 
-        await user.save();
+        console.log('Attempting to save user:', user);
 
-        // Generate JWT token
+        await user.save();
+        console.log('User saved successfully');
+
+        // Generate token
         const token = jwt.sign(
             { userId: user._id },
-            process.env.JWT_SECRET || 'your-default-secret',
+            process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
+
+        console.log('Token generated for user:', user._id);
 
         res.status(201).json({
             token,
@@ -57,18 +54,19 @@ router.post('/register', async (req, res) => {
                 name: user.name
             }
         });
+
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(500).json({ error: 'Error creating user' });
+        res.status(500).json({ error: 'Error creating user: ' + error.message });
     }
 });
 
-// Login route
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        console.log('Login attempt for:', email);
 
-        // Find user by email
+        // Find user
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
@@ -80,10 +78,10 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Generate JWT token
+        // Generate token
         const token = jwt.sign(
             { userId: user._id },
-            process.env.JWT_SECRET || 'your-default-secret',
+            process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
 
@@ -96,20 +94,8 @@ router.post('/login', async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: 'Error logging in' });
-    }
-});
-
-// Get current user route (protected route example)
-router.get('/me', auth, async (req, res) => {
-    try {
-        const user = await User.findById(req.userId).select('-password');
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ error: 'Error fetching user' });
     }
 });
 

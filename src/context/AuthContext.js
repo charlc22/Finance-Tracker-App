@@ -1,4 +1,3 @@
-// src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext(null);
@@ -8,10 +7,8 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in on component mount
         const token = localStorage.getItem('token');
         if (token) {
-            // Verify token and get user data
             checkAuthStatus(token);
         } else {
             setLoading(false);
@@ -20,8 +17,8 @@ export const AuthProvider = ({ children }) => {
 
     const checkAuthStatus = async (token) => {
         try {
-            // You'll implement this API call later
-            const response = await fetch('http://localhost:5000/api/auth/verify', {
+            // Updated port to 5001
+            const response = await fetch('http://localhost:5001/api/auth/verify', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -30,7 +27,6 @@ export const AuthProvider = ({ children }) => {
                 const userData = await response.json();
                 setUser(userData);
             } else {
-                // Token is invalid
                 logout();
             }
         } catch (error) {
@@ -41,33 +37,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = async (email, password) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Login failed');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            setUser(data.user);
-            return true;
-        } catch (error) {
-            console.error('Login error:', error);
-            return false;
-        }
-    };
-
     const register = async (userData) => {
         try {
-            const response = await fetch('http://localhost:5000/api/auth/register', {
+            console.log('Attempting registration with:', userData);
+            const response = await fetch('http://localhost:5001/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -75,17 +48,48 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify(userData),
             });
 
+            console.log('Registration response status:', response.status);
+            const data = await response.json();
+            console.log('Registration response data:', data);
+
             if (!response.ok) {
-                throw new Error('Registration failed');
+                throw new Error(data.error || 'Registration failed');
             }
 
-            const data = await response.json();
             localStorage.setItem('token', data.token);
             setUser(data.user);
             return true;
         } catch (error) {
-            console.error('Registration error:', error);
-            return false;
+            console.error('Detailed registration error:', error);
+            throw error;
+        }
+    };
+
+    const login = async (email, password) => {
+        try {
+            console.log('Attempting login for:', email);
+            const response = await fetch('http://localhost:5001/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            console.log('Login response status:', response.status);
+            const data = await response.json();
+            console.log('Login response data:', data);
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Login failed');
+            }
+
+            localStorage.setItem('token', data.token);
+            setUser(data.user);
+            return true;
+        } catch (error) {
+            console.error('Detailed login error:', error);
+            throw error;
         }
     };
 
@@ -95,7 +99,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     if (loading) {
-        // You can replace this with a loading spinner component
         return <div>Loading...</div>;
     }
 
