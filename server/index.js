@@ -9,7 +9,7 @@ const app = express();
 
 // Set CORS headers for all routes
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5002'],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5002', 'http://localhost:55000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -48,7 +48,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Something went wrong!' });
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 55000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`MongoDB URI: ${process.env.MONGODB_URI || 'Using default connection string'}`);
