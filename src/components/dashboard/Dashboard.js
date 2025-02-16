@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Line } from 'recharts';
+import React, { useState } from 'react';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
 import { useAuth } from '../../context/AuthContext';
 import './Dashboard.css';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -11,6 +15,62 @@ const Dashboard = () => {
         amount: '',
         category: 'food'
     });
+
+    // Chart.js data configuration
+    const chartData = {
+        labels: ['Food', 'Rent', 'Utilities', 'Clothing', 'Vehicle', 'Other'],
+        datasets: [
+            {
+                label: 'Monthly Expenses',
+                data: [850, 1200, 300, 400, 550, 250],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    // Chart.js options
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: {
+                        size: 14,
+                        family: '"Nirmala Text", sans-serif'
+                    },
+                    padding: 20
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.raw || 0;
+                        return `${label}: $${value}`;
+                    }
+                }
+            }
+        },
+        cutout: '60%'
+    };
 
     const handleExpenseSubmit = (e) => {
         e.preventDefault();
@@ -57,11 +117,15 @@ const Dashboard = () => {
                 <h2>Your Profile</h2>
                 <p className="welcome-message">Welcome back, {user?.name || 'User'}!</p>
             </div>
+
             <section id="dashboard" className="section">
                 <h2>Expense Overview</h2>
                 <p>Track your monthly expenses and see where your money goes.</p>
                 <div className="chart-container">
-                    {/* Chart component will go here */}
+                    <Doughnut
+                        data={chartData}
+                        options={chartOptions}
+                    />
                 </div>
             </section>
 
@@ -121,7 +185,7 @@ const Dashboard = () => {
             <section id="uploads" className="section">
                 <h2>Your Uploads</h2>
                 <div className="upload-section">
-                    <h3>Upload Your PDF</h3>
+                    <h3>Upload Your Statement PDF</h3>
                     <input
                         type="file"
                         id="pdfInput"

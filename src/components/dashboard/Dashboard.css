@@ -25,7 +25,7 @@
     text-align: center;
     padding: 20px;
     background-color: #f5f5f5;
-    min-height: calc(100vh - 64px); /* Adjust based on your navbar height */
+    min-height: calc(100vh - 64px);
 }
 
 .section {
@@ -87,9 +87,33 @@
     align-items: center;
 }
 
+/* New styles for ML-enhanced features */
+.expense-item .expense-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.expense-item .category-tag {
+    background: #b63535;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+.expense-item .amount {
+    font-weight: 600;
+    color: #373737;
+}
+
 .chart-container {
     margin: 20px 0;
-    height: 300px;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .upload-section {
@@ -97,6 +121,34 @@
     padding: 20px;
     border: 2px dashed #ccc;
     border-radius: 10px;
+    transition: border-color 0.3s ease;
+}
+
+.upload-section:hover {
+    border-color: #b63535;
+}
+
+.file-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.file-input::-webkit-file-upload-button {
+    background: #b63535;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.file-input::-webkit-file-upload-button:hover {
+    background: #852828;
 }
 
 .pdf-preview {
@@ -105,8 +157,62 @@
     overflow: hidden;
 }
 
+/* Loading states */
+.loading-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    color: #666;
+}
+
+/* ML confidence indicators */
+.confidence-high {
+    border-left: 4px solid #4CAF50;
+}
+
+.confidence-medium {
+    border-left: 4px solid #FFC107;
+}
+
+.confidence-low {
+    border-left: 4px solid #FF5722;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .section {
         width: 95%;
     }
+
+    .expense-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .expense-item .expense-details {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+}
+
+/* Animation for newly added expenses */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.expense-item {
+    animation: fadeIn 0.3s ease;
 }
