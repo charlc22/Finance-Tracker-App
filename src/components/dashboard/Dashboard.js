@@ -1,75 +1,77 @@
-import React, { useState } from 'react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+import BudgetDisplay from './BudgetDisplay';
 import './Dashboard.css';
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
+// Create an axios instance with proper config
+const api = axios.create({
+    baseURL: 'http://localhost:55000/api',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+// Add request interceptor for auth token
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        console.log('Request config:', {
+            url: config.url,
+            headers: config.headers,
+            method: config.method
+        });
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 const Dashboard = () => {
     const { user } = useAuth();
     const [expenses, setExpenses] = useState([]);
+    const [statements, setStatements] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState('');
     const [newExpense, setNewExpense] = useState({
         name: '',
         amount: '',
         category: 'food'
     });
 
-    // Chart.js data configuration
-    const chartData = {
-        labels: ['Food', 'Rent', 'Utilities', 'Clothing', 'Vehicle', 'Other'],
-        datasets: [
-            {
-                label: 'Monthly Expenses',
-                data: [850, 1200, 300, 400, 550, 250],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.8)',
-                    'rgba(255, 159, 64, 0.8)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    };
+    useEffect(() => {
+        fetchStatements();
+        console.log('Current token:', localStorage.getItem('token'));
+    }, []);
 
-    // Chart.js options
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    font: {
-                        size: 14,
-                        family: '"Nirmala Text", sans-serif'
-                    },
-                    padding: 20
+    const fetchStatements = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            console.log('\n=== Fetch Statements Debug ===');
+            console.log('Token being used:', token ? `${token.substring(0, 20)}...` : 'none');
+
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const label = context.label || '';
-                        const value = context.raw || 0;
-                        return `${label}: $${value}`;
-                    }
-                }
+            };
+            console.log('Request config:', config);
+
+            const response = await api.get('/bankStatements/statements', config);
+            console.log('Response:', response.data);
+
+            setStatements(response.data);
+        } catch (error) {
+            console.error('Error fetching statements:', error.response?.data || error.message);
+            if (error.response?.status === 401) {
+                console.log('Token validation failed - you might need to log in again');
             }
-        },
-        cutout: '60%'
+        }
     };
 
     const handleExpenseSubmit = (e) => {
@@ -98,16 +100,29 @@ const Dashboard = () => {
         }));
     };
 
-    const handleFileChange = (e) => {
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            // Handle PDF file upload
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                // Handle the PDF content
-                console.log('PDF loaded');
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        setUploading(true);
+        setUploadError('');
+
+        const formData = new FormData();
+        formData.append('statement', file);
+        formData.append('title', file.name);
+
+        try {
+            await api.post('/bankStatements/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            await fetchStatements();
+        } catch (error) {
+            console.error('Upload error:', error);
+            setUploadError(error.response?.data?.error || 'Error uploading file');
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -118,16 +133,7 @@ const Dashboard = () => {
                 <p className="welcome-message">Welcome back, {user?.name || 'User'}!</p>
             </div>
 
-            <section id="dashboard" className="section">
-                <h2>Expense Overview</h2>
-                <p>Track your monthly expenses and see where your money goes.</p>
-                <div className="chart-container">
-                    <Doughnut
-                        data={chartData}
-                        options={chartOptions}
-                    />
-                </div>
-            </section>
+            <BudgetDisplay expenses={expenses} />
 
             <section id="track" className="section">
                 <h2>Track Your Expenses</h2>
@@ -164,35 +170,36 @@ const Dashboard = () => {
                         Add Expense
                     </button>
                 </form>
-                <ul className="expense-list">
-                    {expenses.map(expense => (
-                        <li key={expense.id} className="expense-item">
-                            <span>{expense.name}</span>
-                            <span>${expense.amount}</span>
-                        </li>
-                    ))}
-                </ul>
-            </section>
-
-            <section id="comparison" className="section">
-                <h2>How Do You Compare?</h2>
-                <p>See how your spending compares to the national average.</p>
-                <div className="chart-container">
-                    {/* Comparison chart will go here */}
-                </div>
             </section>
 
             <section id="uploads" className="section">
-                <h2>Your Uploads</h2>
+                <h2>Your Bank Statements</h2>
                 <div className="upload-section">
-                    <h3>Upload Your Statement PDF</h3>
+                    <h3>Upload Statement</h3>
                     <input
                         type="file"
-                        id="pdfInput"
                         accept="application/pdf"
-                        onChange={handleFileChange}
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                        className="file-input"
                     />
-                    <div id="pdfPreview" className="pdf-preview" />
+                    {uploading && <p className="upload-status">Uploading...</p>}
+                    {uploadError && <p className="error-message">{uploadError}</p>}
+
+                    {statements.length > 0 && (
+                        <div className="statements-list">
+                            <h3>Uploaded Statements</h3>
+                            <ul>
+                                {statements.map(statement => (
+                                    <li key={statement._id} className="statement-item">
+                                        <span>{statement.title}</span>
+                                        <span>{new Date(statement.uploadDate).toLocaleDateString()}</span>
+                                        <span>{statement.isProcessed ? 'Processed' : 'Pending'}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </section>
         </div>

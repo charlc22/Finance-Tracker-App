@@ -1,13 +1,13 @@
-// routes/statements.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const BankStatement = require('../models/bankStatement.model');
+const BankStatement = require('../models/BankStatement');
+const auth = require('../middleware/auth');
 
 // Configure multer for PDF uploads
 const upload = multer({
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit for demo
+        fileSize: 5 * 1024 * 1024 // 5MB limit
     },
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'application/pdf') {
@@ -18,66 +18,63 @@ const upload = multer({
     }
 });
 
-// Upload route
-router.post('/upload', upload.single('pdfFile'), async (req, res) => {
+// Add some debug logging
+router.use((req, res, next) => {
+    console.log('Bank Statement Route accessed:', req.method, req.url);
+    next();
+});
+
+// Add this to your BankStatements.js route file
+router.get('/test', (req, res) => {
+    res.json({ message: 'Bank statements route is working' });
+});
+
+// Upload bank statement
+router.post('/upload', auth, upload.single('statement'), async (req, res) => {
+    console.log('Upload endpoint hit, user:', req.userId);
     try {
         if (!req.file) {
-            return res.status(400).json({ error: 'No PDF file uploaded' });
+            return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const newStatement = new BankStatement({
-            userId: req.user._id, // Assuming you have authentication middleware
-            title: req.body.title,
+        const bankStatement = new BankStatement({
+            userId: req.userId,
+            title: req.body.title || 'Bank Statement',
             fileName: req.file.originalname,
             pdfData: req.file.buffer,
-            uploadDate: new Date()
+            uploadDate: new Date(),
+            isProcessed: false
         });
 
-        await newStatement.save();
+        await bankStatement.save();
+        console.log('Statement saved:', bankStatement._id);
 
         res.status(201).json({
-            message: 'PDF uploaded successfully',
-            statementId: newStatement._id,
-            title: newStatement.title
+            message: 'Bank statement uploaded successfully',
+            statementId: bankStatement._id
         });
 
     } catch (error) {
         console.error('Upload error:', error);
-        res.status(500).json({ error: 'Failed to upload PDF' });
+        res.status(500).json({ error: 'Error uploading bank statement' });
     }
 });
 
-// Get all statements for a user
-router.get('/list', async (req, res) => {
+// Get user's bank statements
+router.get('/statements', auth, async (req, res) => {
+    console.log('Statements endpoint hit');
     try {
-        const statements = await BankStatement.find(
-            { userId: req.user._id },
-            { pdfData: 0 } // Exclude PDF data from results
-        ).sort({ uploadDate: -1 });
+        const statements = await BankStatement.find({
+            userId: req.user.userId
+        }).select('-pdfData')
+            .sort({ uploadDate: -1 });
 
+        console.log('Found statements:', statements.length);
         res.json(statements);
+
     } catch (error) {
-        console.error('List error:', error);
-        res.status(500).json({ error: 'Failed to retrieve statements' });
-    }
-});
-
-// Get a specific statement
-router.get('/:id', async (req, res) => {
-    try {
-        const statement = await BankStatement.findOne({
-            _id: req.params.id,
-            userId: req.user._id
-        });
-
-        if (!statement) {
-            return res.status(404).json({ error: 'Statement not found' });
-        }
-
-        res.json(statement);
-    } catch (error) {
-        console.error('Retrieval error:', error);
-        res.status(500).json({ error: 'Failed to retrieve statement' });
+        console.error('Fetch error:', error);
+        res.status(500).json({ error: 'Error fetching bank statements' });
     }
 });
 

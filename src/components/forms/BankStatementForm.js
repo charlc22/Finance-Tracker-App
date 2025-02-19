@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const BankStatement = require('../models/bankStatement.model');
+const BankStatement = require('../models/BankStatement.js');
 
 // Configure multer for PDF uploads
 const upload = multer({

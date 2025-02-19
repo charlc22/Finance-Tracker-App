@@ -24,7 +24,6 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Email already registered' });
         }
 
-
         // Create new user
         const user = new User({
             name: name.trim(),
@@ -96,6 +95,30 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Error logging in' });
+    }
+});
+
+// Verify token and get user
+router.get('/verify', auth, async (req, res) => {
+    try {
+        // Get user info but exclude password
+        const user = await User.findById(req.userId)
+            .select('-password');
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        console.error('Verify error:', error);
+        res.status(500).json({ error: 'Error verifying user' });
     }
 });
 
