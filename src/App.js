@@ -9,6 +9,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
+import About from './pages/About'; // Fixed import path
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                         <Routes>
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
+                            <Route path="/about" element={<About />} />
                             <Route
                                 path="/dashboard"
                                 element={
@@ -37,4 +39,5 @@ function App() {
         </AuthProvider>
     );
 }
+
 export default App;

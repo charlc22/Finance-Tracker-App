@@ -1,3 +1,4 @@
+// src/components/layout/Navbar.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -7,15 +8,18 @@ const Navbar = () => {
     const { user, logout } = useAuth();
 
     return (
-        <nav className="navbar">
-            <div className="navbar-container">
+        <nav className="navbar-container">
+            <div className="navbar-content">
                 <Link to="/" className="navbar-brand">
-                    Wallet Wise
+                    FinanceTracker
                 </Link>
                 <div className="navbar-links">
+                    <Link to="/about" className="navbar-link">
+                        About
+                    </Link>
                     {user ? (
                         <>
-                            <span className="navbar-welcome">Welcome, {user.name}</span>
+                            <span className="user-welcome">Welcome, {user.name}</span>
                             <button
                                 onClick={logout}
                                 className="navbar-button"

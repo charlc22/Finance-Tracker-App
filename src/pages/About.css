@@ -1,0 +1,186 @@
+/* src/components/pages/About.css */
+.about-container {
+    font-family: "Nirmala Text", sans-serif;
+    color: #333;
+}
+
+.hero-section {
+    background-color: #f8fafc;
+    padding: 6rem 2rem;
+    text-align: center;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #1f2937;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #4b5563;
+    line-height: 1.75;
+    margin-bottom: 2rem;
+}
+
+.mission-section {
+    padding: 4rem 2rem;
+    background-color: white;
+}
+
+.mission-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.mission-card {
+    padding: 2rem;
+    text-align: center;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mission-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 1rem;
+    color: #b63535;
+}
+
+.mission-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.mission-text {
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.impact-section {
+    background-color: #1f2937;
+    color: white;
+    padding: 4rem 2rem;
+}
+
+.impact-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.impact-title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.stat-card {
+    padding: 2rem;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #b63535;
+    margin-bottom: 1rem;
+}
+
+.stat-label {
+    font-size: 1.25rem;
+    color: #e5e7eb;
+}
+
+.team-section {
+    padding: 4rem 2rem;
+    background-color: white;
+}
+
+.team-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.team-title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #1f2937;
+}
+
+.team-description {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    color: #4b5563;
+    line-height: 1.75;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.team-member {
+    text-align: center;
+}
+
+.member-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    background-color: #e5e7eb;
+    overflow: hidden;
+}
+
+.member-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.member-name {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.member-role {
+    color: #4b5563;
+}
+
+@media (max-width: 768px) {
+    .mission-content,
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .impact-title,
+    .team-title {
+        font-size: 2rem;
+    }
+}
