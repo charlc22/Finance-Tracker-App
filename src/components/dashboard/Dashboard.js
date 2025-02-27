@@ -7,7 +7,7 @@ import {
     fetchBankStatements,
     analyzeBankStatement,
     getAnalysisResults
-} from '../../Services /bankStatementService.js';
+} from '../../services/bankStatementService.js';
 
 const Dashboard = () => {
     const { user } = useAuth();
