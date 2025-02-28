@@ -1,0 +1,12 @@
+/* TimeBasedGreeting.css */
+.greeting-container {
+    margin-bottom: 1.5rem;
+}
+
+.greeting-text {
+    font-size: 2rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    padding: 0;
+}

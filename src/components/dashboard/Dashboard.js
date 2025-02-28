@@ -1,20 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 import BudgetDisplay from './BudgetDisplay';
+import TimeBasedGreeting from './TimeBasedGreeting'; // Import the new greeting component
 import './Dashboard.css';
-import {
-    uploadBankStatement,
-    fetchBankStatements,
-    analyzeBankStatement,
-    getAnalysisResults
-} from '../../Services /bankStatementService.js';
+
+// Create an axios instance with proper config
+const api = axios.create({
+    baseURL: 'http://localhost:55000/api',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+// Add request interceptor for auth token
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 const Dashboard = () => {
     const { user } = useAuth();
     const [expenses, setExpenses] = useState([]);
     const [statements, setStatements] = useState([]);
     const [uploading, setUploading] = useState(false);
-    const [processing, setProcessing] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const [newExpense, setNewExpense] = useState({
         name: '',
@@ -23,21 +40,23 @@ const Dashboard = () => {
     });
 
     useEffect(() => {
-        loadStatements();
+        fetchStatements();
     }, []);
 
-    const loadStatements = async () => {
+    const fetchStatements = async () => {
         try {
-            const statementsData = await fetchBankStatements();
-            setStatements(statementsData);
+            const token = localStorage.getItem('token');
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
 
-            // If we have any unprocessed statements, offer to process them
-            const unprocessedStatements = statementsData.filter(s => !s.isProcessed);
-            if (unprocessedStatements.length > 0) {
-                console.log('Found unprocessed statements:', unprocessedStatements.length);
-            }
+            const response = await api.get('/bankStatements/statements', config);
+            setStatements(response.data);
         } catch (error) {
-            console.error('Error loading statements:', error);
+            console.error('Error fetching statements:', error.response?.data || error.message);
         }
     };
 
@@ -74,17 +93,17 @@ const Dashboard = () => {
         setUploading(true);
         setUploadError('');
 
+        const formData = new FormData();
+        formData.append('statement', file);
+        formData.append('title', file.name);
+
         try {
-            const result = await uploadBankStatement(file, file.name);
-            console.log('Upload successful:', result);
-
-            // Reload statements after upload
-            await loadStatements();
-
-            // Offer to analyze the newly uploaded statement
-            if (result.statementId) {
-                processStatement(result.statementId);
-            }
+            await api.post('/bankStatements/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            await fetchStatements();
         } catch (error) {
             console.error('Upload error:', error);
             setUploadError(error.response?.data?.error || 'Error uploading file');
@@ -93,43 +112,12 @@ const Dashboard = () => {
         }
     };
 
-    const processStatement = async (statementId) => {
-        setProcessing(true);
-        try {
-            const result = await analyzeBankStatement(statementId);
-            console.log('Processing result:', result);
-
-            if (result.isProcessed) {
-                // If processed immediately, reload to get updated data
-                await loadStatements();
-            }
-        } catch (error) {
-            console.error('Processing error:', error);
-        } finally {
-            setProcessing(false);
-        }
-    };
-
-    const viewAnalysis = async (statementId) => {
-        try {
-            const result = await getAnalysisResults(statementId);
-            console.log('Analysis results:', result);
-            // Data will be used by BudgetDisplay component through the statements prop
-            // Just reload statements to make sure we have latest data
-            await loadStatements();
-        } catch (error) {
-            console.error('Error fetching analysis:', error);
-        }
-    };
-
     return (
         <div className="dashboard-container">
-            <div className="welcome-header">
-                <h2>Your Profile</h2>
-                <p className="welcome-message">Welcome back, {user?.name || 'User'}!</p>
-            </div>
+            {/* Replace the welcome header with the time-based greeting */}
+            <TimeBasedGreeting />
 
-            <BudgetDisplay expenses={expenses} statements={statements} />
+            <BudgetDisplay expenses={expenses} />
 
             <section id="track" className="section">
                 <h2>Track Your Expenses</h2>
@@ -176,11 +164,10 @@ const Dashboard = () => {
                         type="file"
                         accept="application/pdf"
                         onChange={handleFileUpload}
-                        disabled={uploading || processing}
+                        disabled={uploading}
                         className="file-input"
                     />
                     {uploading && <p className="upload-status">Uploading...</p>}
-                    {processing && <p className="upload-status">Processing statement...</p>}
                     {uploadError && <p className="error-message">{uploadError}</p>}
 
                     {statements.length > 0 && (
@@ -191,27 +178,7 @@ const Dashboard = () => {
                                     <li key={statement._id} className="statement-item">
                                         <span>{statement.title}</span>
                                         <span>{new Date(statement.uploadDate).toLocaleDateString()}</span>
-                                        <span className={statement.isProcessed ? 'status-processed' : 'status-pending'}>
-                                            {statement.isProcessed ? 'Processed' : 'Pending'}
-                                        </span>
-                                        <div className="statement-actions">
-                                            {!statement.isProcessed ? (
-                                                <button
-                                                    onClick={() => processStatement(statement._id)}
-                                                    disabled={processing}
-                                                    className="process-button"
-                                                >
-                                                    Process
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => viewAnalysis(statement._id)}
-                                                    className="view-button"
-                                                >
-                                                    View Analysis
-                                                </button>
-                                            )}
-                                        </div>
+                                        <span>{statement.isProcessed ? 'Processed' : 'Pending'}</span>
                                     </li>
                                 ))}
                             </ul>

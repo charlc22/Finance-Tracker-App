@@ -11,7 +11,7 @@ const BudgetDisplay = ({ expenses, statements }) => {
         labels: ['Food', 'Rent', 'Utilities', 'Clothing', 'Vehicle', 'Other'],
         datasets: [{
             label: 'Monthly Expenses',
-            data: [0, 0, 0, 0, 0, 0],
+            data: [30, 30, 30, 30, 30, 30],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.8)',
                 'rgba(54, 162, 235, 0.8)',
