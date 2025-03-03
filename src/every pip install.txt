@@ -1,0 +1,3 @@
+pip install pdfplumber
+pip install pytesseract Pillow
+pip install pandas
