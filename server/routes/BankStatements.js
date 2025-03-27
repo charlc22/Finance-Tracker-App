@@ -3,6 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const BankStatement = require('../models/BankStatement');
 const auth = require('../middleware/auth');
+const { executePythonScript } = require('../utils/pythonExecutor');
+const path = require('path');
 
 // Configure multer for PDF uploads
 const upload = multer({
@@ -49,10 +51,37 @@ router.post('/upload', auth, upload.single('statement'), async (req, res) => {
         await bankStatement.save();
         console.log('Statement saved:', bankStatement._id);
 
-        res.status(201).json({
-            message: 'Bank statement uploaded successfully',
-            statementId: bankStatement._id
+        try {
+
+            // Path to the Python script
+            const scriptPath = path.join(_dirname, '../scripts/WellsFargoPDF_Extractor.py');
+
+            // Execute the Python script with the PDF data
+            const pythonResult = await executePythonScript(scriptPath, [], req.file.buffer);
+
+            // Parse the stdout to get the transaction list
+            const transactionList = parseTransactionOutput(pythonResult.stdout);
+
+            // Update the bank statement with the transaction list
+            await processTransactions(bankStatement._id, transactionList);
+
+            // Respond with success and include the parsed transaction count
+            res.status(201).json({
+                message: 'Bank statement uploaded and parsed successfully',
+                statementId: bankStatement._id,
+                transactionsFound: transactionsList.length
         });
+
+        } catch (pythonError) {
+            // If Python processing fails, still return success for the upload
+            // but note that parsing failed
+            console.error('Python processing error:', pythonError);
+            res.status(201).json({
+                message: 'Bank statement uploaded successfully, but parsing failed',
+                statementId: bankStatement._id,
+                parsingError: pythonError.message
+            });
+        }
 
     } catch (error) {
         console.error('Upload error:', error);

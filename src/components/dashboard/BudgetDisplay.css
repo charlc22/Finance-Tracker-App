@@ -1,6 +1,7 @@
 /* BudgetDisplay.css */
 .chart-container {
-    height: 350px;
+    height: 450px;
+    max-width: 500px;
     margin: 4rem 0;
     position: relative;
 }
