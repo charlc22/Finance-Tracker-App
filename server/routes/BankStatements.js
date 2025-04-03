@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const BankStatement = require('../models/BankStatement');
 const auth = require('../middleware/auth');
-const { executePythonScript } = require('../utils/pythonExecutor');
+//const { executePythonScript } = require('../utils/pythonExecutor');
 const path = require('path');
 
 // Configure multer for PDF uploads

@@ -100,4 +100,4 @@ const BudgetDisplay = () => {
     );
 };
 
-export default TestBudgetDisplay;
+export default BudgetDisplay;
