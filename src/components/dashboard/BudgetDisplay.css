@@ -1,9 +1,12 @@
-/* BudgetDisplay.css */
+/* BudgetDisplay.css - Updated for better centering */
 .chart-container {
     height: 450px;
-    max-width: 500px;
-    margin: 4rem 0;
+    max-width: 600px;
+    margin: 4rem auto; /* Changed to auto for horizontal centering */
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .chart-loading,
@@ -79,6 +82,12 @@
     border-radius: 0.25rem;
     font-size: 0.875rem;
     color: #4b5563;
+}
+
+.no-data-message {
+    text-align: center;
+    margin-top: 2rem;
+    color: #6b7280;
 }
 
 @media (max-width: 768px) {

@@ -23,6 +23,8 @@ function executePythonScript(scriptPath, args = []) {
 
         // Use the specific Python path for macOS
         const pythonExecutable = '/usr/local/bin/python3';
+        // charly python /opt/anaconda3/bin/python
+
 
         // Spawn Python process
         const pythonProcess = spawn(pythonExecutable, [scriptPath, ...args]);

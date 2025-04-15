@@ -1,4 +1,4 @@
-// BudgetDisplay.js - Fixed for Wells Fargo parser data
+// BudgetDisplay.js - Modified with thicker, centered placeholder chart
 import React, { useEffect, useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
@@ -12,6 +12,35 @@ const BudgetDisplay = ({ statements }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedStatement, setSelectedStatement] = useState(null);
+
+    // Initialize empty chart data with theme colors - using your actual category colors
+    const [emptyChartData] = useState({
+        labels: ['Education & Learning', 'E-Commerce', 'Entertainment & Recreation',
+            'Automotive & Gas', 'Other', 'Retail & Clothing',
+            'Restaurants & Fast Food', 'Groceries', 'Health & Fitness',
+            'Travel & Transportation'],
+        datasets: [{
+            label: 'No Data',
+            data: [25, 15, 15, 12, 8, 7, 7, 5, 3, 3],
+            backgroundColor: [
+                '#F3722C', // Education & Learning
+                '#FF6384', // E-Commerce
+                '#8AC926', // Entertainment & Recreation
+                '#6A4C93', // Automotive & Gas
+                '#9C9C9C', // Other
+                '#1982C4', // Retail & Clothing
+                '#4BC0C0', // Restaurants & Fast Food
+                '#FFCE56', // Groceries
+                '#FF6B6B', // Health & Fitness
+                '#FF9F40'  // Travel & Transportation
+            ],
+            borderColor: [
+                '#F3722C', '#FF6384', '#8AC926', '#6A4C93', '#9C9C9C',
+                '#1982C4', '#4BC0C0', '#FFCE56', '#FF6B6B', '#FF9F40'
+            ],
+            borderWidth: 1
+        }]
+    });
 
     // Color palette for consistent category colors
     const categoryColors = {
@@ -177,6 +206,43 @@ const BudgetDisplay = ({ statements }) => {
     const totalExpenses = selectedStatement?.mlResults?.totalExpenses ||
         (chartData?.datasets[0]?.data?.reduce((sum, val) => sum + val, 0) || 0);
 
+    // Determine if we have real data or if we're showing the empty placeholder
+    const hasRealData = !loading && !error && chartData &&
+        !chartData.datasets[0].label.includes('No Data');
+
+    // Chart options - same for both real and placeholder data
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '55%', // Thicker donut (was 70%)
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: (context) => {
+                        // If this is the placeholder chart
+                        if (!hasRealData) {
+                            return 'Upload a statement to see your actual expenses';
+                        }
+
+                        // For real data, show dollar amount and percentage
+                        const value = context.raw;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = Math.round((value / total) * 100);
+                        return `$${value.toFixed(2)} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    };
+
     return (
         <section className="section">
             <h2>Your Spending Summary</h2>
@@ -214,38 +280,15 @@ const BudgetDisplay = ({ statements }) => {
                     </div>
                 )}
 
-                {!loading && !error && chartData && (
+                {!loading && !error && (
                     <Doughnut
-                        data={chartData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'right',
-                                    labels: {
-                                        font: {
-                                            size: 12
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (context) => {
-                                            const value = context.raw;
-                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            const percentage = Math.round((value / total) * 100);
-                                            return `$${value.toFixed(2)} (${percentage}%)`;
-                                        }
-                                    }
-                                }
-                            }
-                        }}
+                        data={hasRealData ? chartData : emptyChartData}
+                        options={chartOptions}
                     />
                 )}
             </div>
 
-            {!loading && !error && chartData && (
+            {hasRealData ? (
                 <div className="expense-summary">
                     <div className="total-expenses">
                         Total Expenses: ${totalExpenses.toFixed(2)}
@@ -270,9 +313,7 @@ const BudgetDisplay = ({ statements }) => {
                         })}
                     </div>
                 </div>
-            )}
-
-            {!loading && !error && (!chartData || chartData.labels.length === 0) && (
+            ) : (
                 <div className="no-data-message">
                     <p>No expense data available. Process a bank statement to see your spending breakdown.</p>
                 </div>
