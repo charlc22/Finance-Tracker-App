@@ -3,10 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const BankStatement = require('../models/BankStatement');
-const { executePythonScript } = require('../utils/pythonExecutor');
+const { parseBankStatement } = require('../utils/pythonExecutor');
 
 /**
- * Process a PDF bank statement with the Wells Fargo parser
+ * Process a PDF bank statement with the appropriate parser based on bank identification
  * @param {Buffer} pdfBuffer - The PDF file as a buffer
  * @param {string} filename - Original filename
  * @returns {Promise<Object>} Parser results
@@ -21,15 +21,13 @@ async function processPdfWithParser(pdfBuffer, filename) {
         fs.writeFileSync(tempFilePath, pdfBuffer);
         console.log(`PDF saved to temporary file: ${tempFilePath}`);
 
-        // Path to the Python script
-        const scriptPath = path.join(__dirname, '..', 'scripts', 'wellsfargo_parser.py');
-
-        // Execute the parser
-        const result = await executePythonScript(scriptPath, [tempFilePath]);
+        // Use our enhanced parser with bank identification
+        const result = await parseBankStatement(tempFilePath);
 
         // Parse the results
-        const parserOutput = JSON.parse(result.stdout);
+        const parserOutput = result.parsedJson;
         console.log(`Parser found ${parserOutput.summary.totalTransactions} transactions`);
+        console.log(`Identified bank: ${parserOutput.bankIdentifier || 'Unknown'}`);
 
         return parserOutput;
     } finally {
@@ -54,7 +52,7 @@ async function createAndProcessStatement(data) {
     // Create a new bank statement record
     const bankStatement = new BankStatement({
         userId: data.userId,
-        title: data.title || 'Wells Fargo Statement',
+        title: data.title || 'Bank Statement',
         fileName: data.fileName,
         pdfData: data.pdfData,
         uploadDate: new Date(),
@@ -79,6 +77,8 @@ async function createAndProcessStatement(data) {
             categoryBreakdown: parserOutput.categoryBreakdown
         };
 
+        // Update the bank name
+        bankStatement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
         bankStatement.isProcessed = true;
         await bankStatement.save();
         console.log('Bank statement updated with parsed data');
@@ -132,6 +132,8 @@ async function processExistingStatement(statementId, userId) {
             categoryBreakdown: parserOutput.categoryBreakdown
         };
 
+        // Update the bank name
+        statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
         statement.isProcessed = true;
         statement.processingError = null;
         await statement.save();
@@ -182,6 +184,31 @@ async function getStatementById(statementId, userId) {
 }
 
 /**
+ * Get statements by bank name
+ * @param {string} userId - User ID
+ * @param {string} bankName - Bank name to filter by
+ * @returns {Promise<Array>} Array of statements
+ */
+async function getStatementsByBank(userId, bankName) {
+    return BankStatement.find({
+        userId: userId,
+        bankName: bankName
+    })
+        .select('-pdfData')  // Exclude PDF data
+        .sort({ uploadDate: -1 });
+}
+
+/**
+ * Get all unique banks for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} Array of unique bank names
+ */
+async function getUserBanks(userId) {
+    const result = await BankStatement.distinct('bankName', { userId: userId });
+    return result.filter(bank => bank !== 'Unknown Bank');
+}
+
+/**
  * Delete a statement
  * @param {string} statementId - Statement ID
  * @param {string} userId - User ID
@@ -202,5 +229,7 @@ module.exports = {
     processExistingStatement,
     getUserStatements,
     getStatementById,
+    getStatementsByBank,
+    getUserBanks,
     deleteStatement
 };

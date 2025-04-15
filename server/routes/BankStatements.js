@@ -7,7 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const BankStatement = require('../models/BankStatement');
 const auth = require('../middleware/auth');
-const { executePythonScript } = require('../utils/pythonExecutor');
+const { parseBankStatement } = require('../utils/pythonExecutor');
 
 // Configure multer for PDF uploads
 const upload = multer({
@@ -99,14 +99,11 @@ async function processStatementWithPython(statement) {
         fs.writeFileSync(tempFilePath, statement.pdfData);
         console.log(`PDF saved to temporary file: ${tempFilePath}`);
 
-        // Path to the Python script - adjust this to your actual path
-        const scriptPath = path.join(__dirname, '..', 'scripts', 'wellsfargo_parser.py');
-
-        // Execute the Python script
+        // Use the enhanced parseBankStatement function to identify bank and parse
         console.log('Executing Python parser...');
-        const result = await executePythonScript(scriptPath, [tempFilePath]);
+        const result = await parseBankStatement(tempFilePath);
 
-        // Use the parsed JSON from the updated pythonExecutor
+        // Use the parsed JSON
         const parserOutput = result.parsedJson;
 
         if (!parserOutput) {
@@ -114,6 +111,7 @@ async function processStatementWithPython(statement) {
         }
 
         console.log(`Parser found ${parserOutput.summary.totalTransactions} transactions`);
+        console.log(`Identified bank: ${parserOutput.bankIdentifier || 'Unknown'}`);
 
         // Update the statement with the parsed data
         statement.mlResults = {
@@ -125,22 +123,47 @@ async function processStatementWithPython(statement) {
             categoryBreakdown: parserOutput.categoryBreakdown
         };
 
+        // Update bank name
+        statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
         statement.isProcessed = true;
         await statement.save();
-        console.log('Statement updated with parsed data, ID:', statement._id);
 
         // Clean up the temporary file
         if (fs.existsSync(tempFilePath)) {
             fs.unlinkSync(tempFilePath);
             console.log('Temporary PDF file deleted');
         }
-    } catch (error) {
-        console.error('Error processing statement with Python:', error);
 
-        // Update the statement with the error
-        statement.processingError = error.message;
-        await statement.save();
+        res.json({
+            message: 'Statement processed successfully',
+            statementId: statementId,
+            isProcessed: true,
+            bankName: statement.bankName,
+            transactionCount: parserOutput.summary.totalTransactions
+        });Credits,
+            totalTransactions: parserOutput.summary.totalTransactions,
+            processedDate: new Date(),
+            categoryBreakdown: parserOutput.categoryBreakdown
+    };
+
+    // Update bank name
+    statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
+    statement.isProcessed = true;
+    await statement.save();
+    console.log('Statement updated with parsed data, ID:', statement._id);
+
+    // Clean up the temporary file
+    if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+        console.log('Temporary PDF file deleted');
     }
+} catch (error) {
+    console.error('Error processing statement with Python:', error);
+
+    // Update the statement with the error
+    statement.processingError = error.message;
+    await statement.save();
+}
 }
 
 // Get user's bank statements
@@ -182,9 +205,6 @@ router.post('/analyze/:id', auth, async (req, res) => {
             });
         }
 
-        // We'll process it with the Python parser now
-        console.log('Starting manual processing for statement:', statementId);
-
         // Create a temporary file for the PDF
         const tempDir = os.tmpdir();
         const tempFilePath = path.join(tempDir, `statement_${Date.now()}.pdf`);
@@ -193,14 +213,11 @@ router.post('/analyze/:id', auth, async (req, res) => {
         fs.writeFileSync(tempFilePath, statement.pdfData);
         console.log(`PDF saved to temporary file: ${tempFilePath}`);
 
-        // Path to the Python script
-        const scriptPath = path.join(__dirname, '..', 'scripts', 'wellsfargo_parser.py');
-
-        // Execute the Python script
+        // Use the enhanced parseBankStatement function to identify bank and parse
         console.log('Executing Python parser...');
-        const result = await executePythonScript(scriptPath, [tempFilePath]);
+        const result = await parseBankStatement(tempFilePath);
 
-        // Use the parsed JSON from the updated pythonExecutor
+        // Use the parsed JSON
         const parserOutput = result.parsedJson;
 
         if (!parserOutput) {
@@ -208,68 +225,10 @@ router.post('/analyze/:id', auth, async (req, res) => {
         }
 
         console.log(`Parser found ${parserOutput.summary.totalTransactions} transactions`);
+        console.log(`Identified bank: ${parserOutput.bankIdentifier || 'Unknown'}`);
 
         // Update the statement with the parsed data
         statement.mlResults = {
             expenses: parserOutput.transactions,
             totalExpenses: parserOutput.summary.totalDebits,
-            totalCredits: parserOutput.summary.totalCredits,
-            totalTransactions: parserOutput.summary.totalTransactions,
-            processedDate: new Date(),
-            categoryBreakdown: parserOutput.categoryBreakdown
-        };
-
-        statement.isProcessed = true;
-        await statement.save();
-
-        // Clean up the temporary file
-        if (fs.existsSync(tempFilePath)) {
-            fs.unlinkSync(tempFilePath);
-            console.log('Temporary PDF file deleted');
-        }
-
-        res.json({
-            message: 'Statement processed successfully',
-            statementId: statementId,
-            isProcessed: true,
-            transactionCount: parserOutput.summary.totalTransactions
-        });
-    } catch (error) {
-        console.error('Analysis request error:', error);
-        res.status(500).json({ error: 'Error processing statement: ' + error.message });
-    }
-});
-
-// Get analysis results for a statement
-router.get('/analysis/:id', auth, async (req, res) => {
-    try {
-        const statementId = req.params.id;
-        const statement = await BankStatement.findOne({
-            _id: statementId,
-            userId: req.user.userId
-        }).select('-pdfData'); // Exclude PDF data from the response
-
-        if (!statement) {
-            return res.status(404).json({ error: 'Statement not found' });
-        }
-
-        if (!statement.isProcessed) {
-            return res.status(400).json({
-                error: 'Statement has not been processed yet',
-                statementId: statementId,
-                isProcessed: false
-            });
-        }
-
-        res.json({
-            statementId: statementId,
-            mlResults: statement.mlResults,
-            isProcessed: statement.isProcessed
-        });
-    } catch (error) {
-        console.error('Fetch analysis error:', error);
-        res.status(500).json({ error: 'Error fetching analysis results' });
-    }
-});
-
-module.exports = router;
+            totalCredits: parserOutput.summary.total
