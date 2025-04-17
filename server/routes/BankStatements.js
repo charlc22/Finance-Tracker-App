@@ -127,43 +127,20 @@ async function processStatementWithPython(statement) {
         statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
         statement.isProcessed = true;
         await statement.save();
+        console.log('Statement updated with parsed data, ID:', statement._id);
 
         // Clean up the temporary file
         if (fs.existsSync(tempFilePath)) {
             fs.unlinkSync(tempFilePath);
             console.log('Temporary PDF file deleted');
         }
+    } catch (error) {
+        console.error('Error processing statement with Python:', error);
 
-        res.json({
-            message: 'Statement processed successfully',
-            statementId: statementId,
-            isProcessed: true,
-            bankName: statement.bankName,
-            transactionCount: parserOutput.summary.totalTransactions
-        });Credits,
-            totalTransactions: parserOutput.summary.totalTransactions,
-            processedDate: new Date(),
-            categoryBreakdown: parserOutput.categoryBreakdown
-    };
-
-    // Update bank name
-    statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
-    statement.isProcessed = true;
-    await statement.save();
-    console.log('Statement updated with parsed data, ID:', statement._id);
-
-    // Clean up the temporary file
-    if (fs.existsSync(tempFilePath)) {
-        fs.unlinkSync(tempFilePath);
-        console.log('Temporary PDF file deleted');
+        // Update the statement with the error
+        statement.processingError = error.message;
+        await statement.save();
     }
-} catch (error) {
-    console.error('Error processing statement with Python:', error);
-
-    // Update the statement with the error
-    statement.processingError = error.message;
-    await statement.save();
-}
 }
 
 // Get user's bank statements
@@ -231,4 +208,67 @@ router.post('/analyze/:id', auth, async (req, res) => {
         statement.mlResults = {
             expenses: parserOutput.transactions,
             totalExpenses: parserOutput.summary.totalDebits,
-            totalCredits: parserOutput.summary.total
+            totalCredits: parserOutput.summary.totalCredits,
+            totalTransactions: parserOutput.summary.totalTransactions,
+            processedDate: new Date(),
+            categoryBreakdown: parserOutput.categoryBreakdown
+        };
+
+        // Update bank name
+        statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
+        statement.isProcessed = true;
+        await statement.save();
+
+        // Clean up the temporary file
+        if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+            console.log('Temporary PDF file deleted');
+        }
+
+        res.json({
+            message: 'Statement processed successfully',
+            statementId: statementId,
+            isProcessed: true,
+            bankName: statement.bankName,
+            transactionCount: parserOutput.summary.totalTransactions
+        });
+    } catch (error) {
+        console.error('Analysis request error:', error);
+        res.status(500).json({ error: 'Error processing statement: ' + error.message });
+    }
+});
+
+// Get analysis results for a statement
+router.get('/analysis/:id', auth, async (req, res) => {
+    try {
+        const statementId = req.params.id;
+        const statement = await BankStatement.findOne({
+            _id: statementId,
+            userId: req.user.userId
+        }).select('-pdfData'); // Exclude PDF data from the response
+
+        if (!statement) {
+            return res.status(404).json({ error: 'Statement not found' });
+        }
+
+        if (!statement.isProcessed) {
+            return res.status(400).json({
+                error: 'Statement has not been processed yet',
+                statementId: statementId,
+                isProcessed: false
+            });
+        }
+
+        res.json({
+            statementId: statementId,
+            mlResults: statement.mlResults,
+            isProcessed: statement.isProcessed,
+            bankName: statement.bankName
+        });
+    } catch (error) {
+        console.error('Fetch analysis error:', error);
+        res.status(500).json({ error: 'Error fetching analysis results' });
+    }
+});
+
+module.exports = router;

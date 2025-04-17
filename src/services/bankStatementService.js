@@ -6,16 +6,18 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:55000/api';
 // Configure axios with auth token interceptor
 const api = axios.create({
     baseURL: API_URL,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
-    }
+    },
+    withCredentials: true //This is for cookies
 });
 
 // Add request interceptor to include auth token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
-        if (token) {
+        if (token && !config.headers.Authorization) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
