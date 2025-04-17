@@ -7,7 +7,7 @@ const fs = require('fs');
 const os = require('os');
 const BankStatement = require('../models/BankStatement');
 const auth = require('../middleware/auth');
-const { executePythonScript } = require('../utils/pythonExecutor');
+const { parseBankStatement } = require('../utils/pythonExecutor');
 
 // Configure multer for PDF uploads
 const upload = multer({
@@ -99,14 +99,11 @@ async function processStatementWithPython(statement) {
         fs.writeFileSync(tempFilePath, statement.pdfData);
         console.log(`PDF saved to temporary file: ${tempFilePath}`);
 
-        // Path to the Python script - adjust this to your actual path
-        const scriptPath = path.join(__dirname, '..', 'scripts', 'wellsfargo_parser.py');
-
-        // Execute the Python script
+        // Use the enhanced parseBankStatement function to identify bank and parse
         console.log('Executing Python parser...');
-        const result = await executePythonScript(scriptPath, [tempFilePath]);
+        const result = await parseBankStatement(tempFilePath);
 
-        // Use the parsed JSON from the updated pythonExecutor
+        // Use the parsed JSON
         const parserOutput = result.parsedJson;
 
         if (!parserOutput) {
@@ -114,6 +111,7 @@ async function processStatementWithPython(statement) {
         }
 
         console.log(`Parser found ${parserOutput.summary.totalTransactions} transactions`);
+        console.log(`Identified bank: ${parserOutput.bankIdentifier || 'Unknown'}`);
 
         // Update the statement with the parsed data
         statement.mlResults = {
@@ -125,6 +123,8 @@ async function processStatementWithPython(statement) {
             categoryBreakdown: parserOutput.categoryBreakdown
         };
 
+        // Update bank name
+        statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
         statement.isProcessed = true;
         await statement.save();
         console.log('Statement updated with parsed data, ID:', statement._id);
@@ -182,9 +182,6 @@ router.post('/analyze/:id', auth, async (req, res) => {
             });
         }
 
-        // We'll process it with the Python parser now
-        console.log('Starting manual processing for statement:', statementId);
-
         // Create a temporary file for the PDF
         const tempDir = os.tmpdir();
         const tempFilePath = path.join(tempDir, `statement_${Date.now()}.pdf`);
@@ -193,14 +190,11 @@ router.post('/analyze/:id', auth, async (req, res) => {
         fs.writeFileSync(tempFilePath, statement.pdfData);
         console.log(`PDF saved to temporary file: ${tempFilePath}`);
 
-        // Path to the Python script
-        const scriptPath = path.join(__dirname, '..', 'scripts', 'wellsfargo_parser.py');
-
-        // Execute the Python script
+        // Use the enhanced parseBankStatement function to identify bank and parse
         console.log('Executing Python parser...');
-        const result = await executePythonScript(scriptPath, [tempFilePath]);
+        const result = await parseBankStatement(tempFilePath);
 
-        // Use the parsed JSON from the updated pythonExecutor
+        // Use the parsed JSON
         const parserOutput = result.parsedJson;
 
         if (!parserOutput) {
@@ -208,6 +202,7 @@ router.post('/analyze/:id', auth, async (req, res) => {
         }
 
         console.log(`Parser found ${parserOutput.summary.totalTransactions} transactions`);
+        console.log(`Identified bank: ${parserOutput.bankIdentifier || 'Unknown'}`);
 
         // Update the statement with the parsed data
         statement.mlResults = {
@@ -219,6 +214,8 @@ router.post('/analyze/:id', auth, async (req, res) => {
             categoryBreakdown: parserOutput.categoryBreakdown
         };
 
+        // Update bank name
+        statement.bankName = parserOutput.bankIdentifier || 'Unknown Bank';
         statement.isProcessed = true;
         await statement.save();
 
@@ -232,6 +229,7 @@ router.post('/analyze/:id', auth, async (req, res) => {
             message: 'Statement processed successfully',
             statementId: statementId,
             isProcessed: true,
+            bankName: statement.bankName,
             transactionCount: parserOutput.summary.totalTransactions
         });
     } catch (error) {
@@ -264,7 +262,8 @@ router.get('/analysis/:id', auth, async (req, res) => {
         res.json({
             statementId: statementId,
             mlResults: statement.mlResults,
-            isProcessed: statement.isProcessed
+            isProcessed: statement.isProcessed,
+            bankName: statement.bankName
         });
     } catch (error) {
         console.error('Fetch analysis error:', error);

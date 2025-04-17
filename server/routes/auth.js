@@ -45,6 +45,13 @@ router.post('/register', async (req, res) => {
 
         console.log('Token generated for user:', user._id);
 
+        // Set token in cookie
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.status(201).json({
             token,
             user: {
@@ -84,6 +91,16 @@ router.post('/login', async (req, res) => {
             { expiresIn: '7d' }
         );
 
+        console.log('Setting auth_token cookie for user:', user._id);
+
+        //Set token in cookie
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 Days
+
+
+        });
+
         res.json({
             token,
             user: {
@@ -98,16 +115,27 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// In auth.js routes (add this if you don't have it)
+router.post('/logout', (req, res) => {
+    res.clearCookie('auth_token');
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
 // Verify token and get user
 router.get('/verify', auth, async (req, res) => {
     try {
+        console.log('Verify endpoint hit, userId:', req.userId);
+
         // Get user info but exclude password
         const user = await User.findById(req.userId)
             .select('-password');
 
         if (!user) {
+            console.log('User not found for ID:', req.userId);
             return res.status(404).json({ error: 'User not found' });
         }
+
+        console.log('User verified successfully:', user.email);
 
         res.json({
             user: {

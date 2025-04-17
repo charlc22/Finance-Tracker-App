@@ -21,6 +21,16 @@ const Dashboard = () => {
         amount: '',
         category: 'food'
     });
+    const [selectedBankFilter, setSelectedBankFilter] = useState('all');
+    const [availableBanks, setAvailableBanks] = useState([]);
+
+    // Bank color mapping for UI elements
+    const bankColors = {
+        'Wells Fargo': '#D71E28', // Red
+        'TD Bank': '#2E8B57',     // Green
+        'Chase': '#1A3766',       // Blue
+        'Unknown Bank': '#777777' // Gray
+    };
 
     useEffect(() => {
         loadStatements();
@@ -30,6 +40,13 @@ const Dashboard = () => {
         try {
             const statementsData = await fetchBankStatements();
             setStatements(statementsData);
+
+            // Extract unique banks from statements
+            const banks = [...new Set(statementsData
+                .map(s => s.bankName || 'Unknown Bank')
+                .filter(bankName => bankName !== 'Unknown Bank'))];
+
+            setAvailableBanks(banks);
 
             // If we have any unprocessed statements, offer to process them
             const unprocessedStatements = statementsData.filter(s => !s.isProcessed);
@@ -122,6 +139,35 @@ const Dashboard = () => {
         }
     };
 
+    // Handle bank filter change
+    const handleBankFilterChange = (e) => {
+        setSelectedBankFilter(e.target.value);
+    };
+
+    // Get filtered statements based on selected bank
+    const getFilteredStatements = () => {
+        if (selectedBankFilter === 'all') {
+            return statements;
+        }
+        return statements.filter(s => s.bankName === selectedBankFilter);
+    };
+
+    // Get bank color for styling
+    const getBankColor = (bankName) => {
+        return bankColors[bankName] || '#777777';
+    };
+
+    // Get bank icon/emoji
+    const getBankIcon = (bankName) => {
+        const icons = {
+            'Wells Fargo': '🔴',
+            'TD Bank': '🟢',
+            'Chase': '🔵',
+            'Unknown Bank': '⚪'
+        };
+        return icons[bankName] || '🏦';
+    };
+
     return (
         <div className="dashboard-container">
             <div className="welcome-header">
@@ -170,8 +216,39 @@ const Dashboard = () => {
 
             <section id="uploads" className="section">
                 <h2>Your Bank Statements</h2>
+
+                {/* Bank filter selector */}
+                {availableBanks.length > 0 && (
+                    <div className="bank-filter">
+                        <label htmlFor="bank-filter">Filter by Bank: </label>
+                        <select
+                            id="bank-filter"
+                            value={selectedBankFilter}
+                            onChange={handleBankFilterChange}
+                            className="bank-select"
+                            style={{
+                                borderLeft: selectedBankFilter !== 'all'
+                                    ? `4px solid ${getBankColor(selectedBankFilter)}`
+                                    : '4px solid transparent'
+                            }}
+                        >
+                            <option value="all">All Banks</option>
+                            {availableBanks.map(bank => (
+                                <option key={bank} value={bank}>
+                                    {bank}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
                 <div className="upload-section">
                     <h3>Upload Statement</h3>
+                    <p className="upload-info">
+                        We support multiple banks including Wells Fargo, TD Bank, and Chase.
+                        Just upload your PDF statement and we'll automatically detect your bank.
+                    </p>
+
                     <input
                         type="file"
                         accept="application/pdf"
@@ -187,13 +264,24 @@ const Dashboard = () => {
                         <div className="statements-list">
                             <h3>Uploaded Statements</h3>
                             <ul>
-                                {statements.map(statement => (
-                                    <li key={statement._id} className="statement-item">
-                                        <span>{statement.title}</span>
-                                        <span>{new Date(statement.uploadDate).toLocaleDateString()}</span>
-                                        <span className={statement.isProcessed ? 'status-processed' : 'status-pending'}>
-                                            {statement.isProcessed ? 'Processed' : 'Pending'}
-                                        </span>
+                                {getFilteredStatements().map(statement => (
+                                    <li
+                                        key={statement._id}
+                                        className="statement-item"
+                                        style={{
+                                            borderLeft: `4px solid ${getBankColor(statement.bankName || 'Unknown Bank')}`
+                                        }}
+                                    >
+                                        <div className="statement-details">
+                                            <span className="statement-bank">
+                                                {getBankIcon(statement.bankName || 'Unknown Bank')} {statement.bankName || 'Unknown Bank'}
+                                            </span>
+                                            <span className="statement-name">{statement.title}</span>
+                                            <span className="statement-date">{new Date(statement.uploadDate).toLocaleDateString()}</span>
+                                            <span className={statement.isProcessed ? 'status-processed' : 'status-pending'}>
+                                                {statement.isProcessed ? 'Processed' : 'Pending'}
+                                            </span>
+                                        </div>
                                         <div className="statement-actions">
                                             {!statement.isProcessed ? (
                                                 <button

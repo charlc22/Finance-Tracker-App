@@ -1,4 +1,4 @@
-// BudgetDisplay.js - Fixed for Wells Fargo parser data
+// BudgetDisplay.js - Enhanced for multi-bank support
 import React, { useEffect, useState } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
@@ -12,6 +12,8 @@ const BudgetDisplay = ({ statements }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedStatement, setSelectedStatement] = useState(null);
+    const [selectedBank, setSelectedBank] = useState('all');
+    const [availableBanks, setAvailableBanks] = useState([]);
 
     // Color palette for consistent category colors
     const categoryColors = {
@@ -41,27 +43,63 @@ const BudgetDisplay = ({ statements }) => {
         return categoryColors[category] || defaultColor;
     };
 
+    // Bank logo/icon color mapping
+    const bankColors = {
+        'Wells Fargo': '#D71E28', // Red
+        'TD Bank': '#2E8B57',     // Green
+        'Chase': '#1A3766',       // Blue
+        'Unknown Bank': '#777777' // Gray
+    };
+
+    // Get a color for a bank (for UI elements)
+    const getBankColor = (bankName) => {
+        return bankColors[bankName] || '#777777';
+    };
+
     useEffect(() => {
         console.log("Statements changed:", statements?.length);
         setLoading(true);
 
-        // Find the most recently processed statement
-        const processedStatements = statements?.filter(s => s.isProcessed) || [];
+        if (statements?.length > 0) {
+            // Extract unique banks from statements
+            const banks = [...new Set(statements
+                .filter(s => s.isProcessed)
+                .map(s => s.bankName || 'Unknown Bank'))];
 
-        if (processedStatements.length > 0) {
-            // Sort by upload date descending and take the first one
-            const mostRecent = processedStatements.sort(
-                (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
-            )[0];
+            setAvailableBanks(banks);
 
-            console.log("Selected most recent statement:", mostRecent._id);
-            setSelectedStatement(mostRecent);
-            prepareChartData(mostRecent);
+            // Find processed statements
+            const processedStatements = statements.filter(s => s.isProcessed);
+
+            if (processedStatements.length > 0) {
+                // If a bank filter is active, apply it
+                const filteredStatements = selectedBank !== 'all'
+                    ? processedStatements.filter(s => s.bankName === selectedBank)
+                    : processedStatements;
+
+                if (filteredStatements.length > 0) {
+                    // Sort by upload date descending and take the first one
+                    const mostRecent = filteredStatements.sort(
+                        (a, b) => new Date(b.uploadDate) - new Date(a.uploadDate)
+                    )[0];
+
+                    console.log("Selected most recent statement:", mostRecent._id);
+                    setSelectedStatement(mostRecent);
+                    prepareChartData(mostRecent);
+                } else {
+                    setLoading(false);
+                    setChartData(null);
+                    setSelectedStatement(null);
+                }
+            } else {
+                console.log("No processed statements found");
+                setLoading(false);
+            }
         } else {
-            console.log("No processed statements found");
+            setAvailableBanks([]);
             setLoading(false);
         }
-    }, [statements]);
+    }, [statements, selectedBank]);
 
     // Handle selecting a different statement
     const handleStatementSelect = (e) => {
@@ -73,6 +111,11 @@ const BudgetDisplay = ({ statements }) => {
             setSelectedStatement(statement);
             prepareChartData(statement);
         }
+    };
+
+    // Handle bank filter change
+    const handleBankChange = (e) => {
+        setSelectedBank(e.target.value);
     };
 
     // Prepare chart data from statement data
@@ -181,23 +224,69 @@ const BudgetDisplay = ({ statements }) => {
         <section className="section">
             <h2>Your Spending Summary</h2>
 
-            {statements && statements.filter(s => s.isProcessed).length > 0 && (
+            {/* Bank filter selector */}
+            {availableBanks.length > 0 && (
+                <div className="bank-selector">
+                    <label htmlFor="bank-select">Filter by Bank: </label>
+                    <select
+                        id="bank-select"
+                        value={selectedBank}
+                        onChange={handleBankChange}
+                        style={{
+                            borderLeftColor: selectedBank !== 'all' ? getBankColor(selectedBank) : 'transparent',
+                            borderLeftWidth: '4px'
+                        }}
+                    >
+                        <option value="all">All Banks</option>
+                        {availableBanks.map(bank => (
+                            <option key={bank} value={bank}>
+                                {bank}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {/* Statement selector */}
+            {statements && statements.filter(s => s.isProcessed && (selectedBank === 'all' || s.bankName === selectedBank)).length > 0 && (
                 <div className="statement-selector">
                     <label htmlFor="statement-select">Select Statement: </label>
                     <select
                         id="statement-select"
                         value={selectedStatement?._id || ''}
                         onChange={handleStatementSelect}
+                        style={{
+                            borderLeftColor: selectedStatement ? getBankColor(selectedStatement.bankName) : 'transparent',
+                            borderLeftWidth: '4px'
+                        }}
                     >
                         {statements
-                            .filter(s => s.isProcessed)
+                            .filter(s => s.isProcessed && (selectedBank === 'all' || s.bankName === selectedBank))
                             .map(s => (
                                 <option key={s._id} value={s._id}>
-                                    {s.title} ({new Date(s.uploadDate).toLocaleDateString()})
+                                    {s.bankName} - {s.title} ({new Date(s.uploadDate).toLocaleDateString()})
                                 </option>
                             ))
                         }
                     </select>
+                </div>
+            )}
+
+            {/* Display bank information if a statement is selected */}
+            {selectedStatement && (
+                <div className="bank-info"
+                     style={{
+                         borderLeft: `4px solid ${getBankColor(selectedStatement.bankName)}`,
+                         paddingLeft: '10px',
+                         marginTop: '15px',
+                         marginBottom: '20px'
+                     }}>
+                    <h3>{selectedStatement.bankName} Statement</h3>
+                    <p>
+                        <strong>Statement: </strong>{selectedStatement.title}<br />
+                        <strong>Uploaded: </strong>{new Date(selectedStatement.uploadDate).toLocaleDateString()}<br />
+                        <strong>Transactions: </strong>{selectedStatement.mlResults?.totalTransactions || 0}
+                    </p>
                 </div>
             )}
 
