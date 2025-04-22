@@ -1,11 +1,39 @@
-// bankStatement.model.js
+// models/BankStatement.js
 const mongoose = require('mongoose');
+
+// Define schema for transaction entries
+const transactionSchema = new mongoose.Schema({
+    date: {
+        type: String,  // Store as MM/DD format from Wells Fargo
+        required: true
+    },
+    description: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    category: {
+        type: String,
+        required: true,
+        default: 'Other'
+    },
+    type: {
+        type: String,
+        enum: ['debit', 'credit'],
+        default: 'debit'
+    }
+});
 
 const bankStatementSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        index: true
+        index: true,
+        ref: 'User'
     },
     title: {
         type: String,
@@ -28,14 +56,17 @@ const bankStatementSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    processingError: {
+        type: String,
+        default: null
+    },
     mlResults: {
-        expenses: [{
-            category: String,
-            amount: Number,
-            date: Date
-        }],
+        expenses: [transactionSchema],
         totalExpenses: Number,
-        processedDate: Date
+        totalCredits: Number,
+        totalTransactions: Number,
+        processedDate: Date,
+        categoryBreakdown: mongoose.Schema.Types.Mixed  // Store as a simple object
     }
 });
 

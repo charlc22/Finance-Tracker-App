@@ -6,36 +6,36 @@ const auth = async (req, res, next) => {
     try {
         // Debug logging
         console.log('\n=== Auth Middleware Debug ===');
-        console.log('Full Headers:', req.headers);
-        console.log('Auth Header:', req.header('Authorization'));
+        console.log('Cookies:', req.cookies);
+        console.log('Cookie auth_token specifically:', req.cookies?.auth_token);
+        console.log('Authorization Header:', req.headers.authorization);
 
-        // Get token from header and clean it
-        const authHeader = req.header('Authorization');
+        // Get token from cookie first
+        let token = req.cookies?.auth_token;
 
-        if (!authHeader) {
-            console.log('❌ No Authorization header found');
-            return res.status(401).json({ error: 'No authentication token' });
-        }
-
-        // Clean and extract the token
-        let token = authHeader;
-        if (authHeader.startsWith('Bearer ')) {
-            token = authHeader.slice(7);
+        // If no cookie token, try Authorization header as fallback
+        if (!token && req.headers.authorization) {
+            const authHeader = req.headers.authorization;
+            if (authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            } else {
+                token = authHeader;
+            }
+            console.log('Using token from Authorization header');
         }
 
         if (!token) {
-            console.log('❌ No token found after cleaning');
+            console.log('❌ No authentication token found');
             return res.status(401).json({ error: 'No authentication token' });
         }
 
-        console.log('Token being verified:', token.substring(0, 20) + '...');
-        console.log('JWT_SECRET length:', process.env.JWT_SECRET?.length);
+        console.log('Token found, verifying...');
 
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log('✅ Token decoded:', decoded);
+            console.log('✅ Token successfully decoded:', decoded);
 
-            // Add both userId and user to request
+            // Add user info to request
             req.userId = decoded.userId;
             req.user = { userId: decoded.userId };
 
@@ -50,7 +50,7 @@ const auth = async (req, res, next) => {
     } catch (error) {
         console.error('❌ Auth middleware error:', error);
         res.status(401).json({
-            error: 'Please authenticate',
+            error: 'Authentication error',
             details: error.message
         });
     }

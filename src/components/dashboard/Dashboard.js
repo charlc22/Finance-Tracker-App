@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import BudgetDisplay from './BudgetDisplay';
+import StatementComparison from './StatementComparison'; // Import the new component
 import './Dashboard.css';
 import {
     uploadBankStatement,
@@ -16,6 +17,7 @@ const Dashboard = () => {
     const [uploading, setUploading] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [uploadError, setUploadError] = useState('');
+    const [activeTab, setActiveTab] = useState('analysis'); // Add tab state for navigation
     const [newExpense, setNewExpense] = useState({
         name: '',
         amount: '',
@@ -117,9 +119,38 @@ const Dashboard = () => {
             // Data will be used by BudgetDisplay component through the statements prop
             // Just reload statements to make sure we have latest data
             await loadStatements();
+
+            // Switch to analysis tab when viewing analysis
+            setActiveTab('analysis');
         } catch (error) {
             console.error('Error fetching analysis:', error);
         }
+    };
+
+    // Navigation tabs for the dashboard
+    const renderTabs = () => {
+        return (
+            <div className="dashboard-tabs">
+                <button
+                    className={`tab-button ${activeTab === 'analysis' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('analysis')}
+                >
+                    Spending Analysis
+                </button>
+                <button
+                    className={`tab-button ${activeTab === 'comparison' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('comparison')}
+                >
+                    Compare Statements
+                </button>
+                <button
+                    className={`tab-button ${activeTab === 'upload' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('upload')}
+                >
+                    Manage Statements
+                </button>
+            </div>
+        );
     };
 
     return (
@@ -129,96 +160,108 @@ const Dashboard = () => {
                 <p className="welcome-message">Welcome back, {user?.name || 'User'}!</p>
             </div>
 
-            <BudgetDisplay expenses={expenses} statements={statements} />
+            {renderTabs()}
 
-            <section id="track" className="section">
-                <h2>Track Your Expenses</h2>
-                <form onSubmit={handleExpenseSubmit} className="styled-form">
-                    <input
-                        type="text"
-                        id="expenseName"
-                        placeholder="Expense Name"
-                        value={newExpense.name}
-                        onChange={handleInputChange}
-                        required
-                    />
-                    <input
-                        type="number"
-                        id="expenseAmount"
-                        placeholder="Amount"
-                        value={newExpense.amount}
-                        onChange={handleInputChange}
-                        required
-                    />
-                    <select
-                        id="expenseCategory"
-                        value={newExpense.category}
-                        onChange={handleInputChange}
-                    >
-                        <option value="food">Food</option>
-                        <option value="rent">Rent</option>
-                        <option value="utilities">Utilities</option>
-                        <option value="clothes">Clothing</option>
-                        <option value="vehicle">Vehicle</option>
-                        <option value="other">Other</option>
-                    </select>
-                    <button type="submit" className="styled-button">
-                        Add Expense
-                    </button>
-                </form>
-            </section>
+            {activeTab === 'analysis' && (
+                <BudgetDisplay expenses={expenses} statements={statements} />
+            )}
 
-            <section id="uploads" className="section">
-                <h2>Your Bank Statements</h2>
-                <div className="upload-section">
-                    <h3>Upload Statement</h3>
-                    <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handleFileUpload}
-                        disabled={uploading || processing}
-                        className="file-input"
-                    />
-                    {uploading && <p className="upload-status">Uploading...</p>}
-                    {processing && <p className="upload-status">Processing statement...</p>}
-                    {uploadError && <p className="error-message">{uploadError}</p>}
+            {activeTab === 'comparison' && (
+                <StatementComparison statements={statements} />
+            )}
 
-                    {statements.length > 0 && (
-                        <div className="statements-list">
-                            <h3>Uploaded Statements</h3>
-                            <ul>
-                                {statements.map(statement => (
-                                    <li key={statement._id} className="statement-item">
-                                        <span>{statement.title}</span>
-                                        <span>{new Date(statement.uploadDate).toLocaleDateString()}</span>
-                                        <span className={statement.isProcessed ? 'status-processed' : 'status-pending'}>
-                                            {statement.isProcessed ? 'Processed' : 'Pending'}
-                                        </span>
-                                        <div className="statement-actions">
-                                            {!statement.isProcessed ? (
-                                                <button
-                                                    onClick={() => processStatement(statement._id)}
-                                                    disabled={processing}
-                                                    className="process-button"
-                                                >
-                                                    Process
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={() => viewAnalysis(statement._id)}
-                                                    className="view-button"
-                                                >
-                                                    View Analysis
-                                                </button>
-                                            )}
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+            {activeTab === 'upload' && (
+                <>
+                    <section id="track" className="section">
+                        <h2>Track Your Expenses</h2>
+                        <form onSubmit={handleExpenseSubmit} className="styled-form">
+                            <input
+                                type="text"
+                                id="expenseName"
+                                placeholder="Expense Name"
+                                value={newExpense.name}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            <input
+                                type="number"
+                                id="expenseAmount"
+                                placeholder="Amount"
+                                value={newExpense.amount}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            <select
+                                id="expenseCategory"
+                                value={newExpense.category}
+                                onChange={handleInputChange}
+                            >
+                                <option value="food">Food</option>
+                                <option value="rent">Rent</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="clothes">Clothing</option>
+                                <option value="vehicle">Vehicle</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <button type="submit" className="styled-button">
+                                Add Expense
+                            </button>
+                        </form>
+                    </section>
+
+                    <section id="uploads" className="section">
+                        <h2>Your Bank Statements</h2>
+                        <div className="upload-section">
+                            <h3>Upload Statement</h3>
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleFileUpload}
+                                disabled={uploading || processing}
+                                className="file-input"
+                            />
+                            {uploading && <p className="upload-status">Uploading...</p>}
+                            {processing && <p className="upload-status">Processing statement...</p>}
+                            {uploadError && <p className="error-message">{uploadError}</p>}
+
+                            {statements.length > 0 && (
+                                <div className="statements-list">
+                                    <h3>Uploaded Statements</h3>
+                                    <ul>
+                                        {statements.map(statement => (
+                                            <li key={statement._id} className="statement-item">
+                                                <span>{statement.title}</span>
+                                                <span>{new Date(statement.uploadDate).toLocaleDateString()}</span>
+                                                <span className={statement.isProcessed ? 'status-processed' : 'status-pending'}>
+                                                    {statement.isProcessed ? 'Processed' : 'Pending'}
+                                                </span>
+                                                <div className="statement-actions">
+                                                    {!statement.isProcessed ? (
+                                                        <button
+                                                            onClick={() => processStatement(statement._id)}
+                                                            disabled={processing}
+                                                            className="process-button"
+                                                        >
+                                                            Process
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => viewAnalysis(statement._id)}
+                                                            className="view-button"
+                                                        >
+                                                            View Analysis
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-            </section>
+                    </section>
+                </>
+            )}
         </div>
     );
 };
