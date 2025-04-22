@@ -224,29 +224,6 @@ const BudgetDisplay = ({ statements }) => {
         <section className="section">
             <h2>Your Spending Summary</h2>
 
-            {/* Bank filter selector */}
-            {availableBanks.length > 0 && (
-                <div className="bank-selector">
-                    <label htmlFor="bank-select">Filter by Bank: </label>
-                    <select
-                        id="bank-select"
-                        value={selectedBank}
-                        onChange={handleBankChange}
-                        style={{
-                            borderLeftColor: selectedBank !== 'all' ? getBankColor(selectedBank) : 'transparent',
-                            borderLeftWidth: '4px'
-                        }}
-                    >
-                        <option value="all">All Banks</option>
-                        {availableBanks.map(bank => (
-                            <option key={bank} value={bank}>
-                                {bank}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-
             {/* Statement selector */}
             {statements && statements.filter(s => s.isProcessed && (selectedBank === 'all' || s.bankName === selectedBank)).length > 0 && (
                 <div className="statement-selector">

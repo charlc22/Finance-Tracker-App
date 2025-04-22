@@ -1,4 +1,4 @@
-/* BudgetDisplay.css */
+/* BudgetDisplay.css - Enhanced but keeping all original styles */
 .chart-container {
     height: 450px;
     max-width: 500px;
@@ -89,4 +89,179 @@
     .chart-container {
         height: 300px;
     }
+}
+
+/* NEW ENHANCED STYLES BELOW - Added on top of existing styles */
+
+/* Loading spinner animation */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e7eb;
+    border-radius: 50%;
+    border-top-color: #ef4444;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Custom dropdowns */
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+}
+
+.filter-label {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.select-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+    color: #f9fafb;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.select-button:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+}
+
+.select-button svg {
+    transition: transform 0.2s;
+}
+
+.select-button.active svg {
+    transform: rotate(180deg);
+}
+
+.select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+    transition: all 0.2s;
+}
+
+.select-dropdown.show {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+.select-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #f9fafb;
+}
+
+.select-option:hover {
+    background-color: #4b5563;
+}
+
+.select-option.selected {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    font-weight: 500;
+}
+
+/* Statement info panel */
+.statement-info-panel {
+    background-color: #374151;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid #ef4444;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #f9fafb;
+}
+
+/* Enhanced expense categories */
+.expense-category {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.expense-category:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.category-percent {
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 48px;
+    text-align: center;
+}
+
+/* No data message */
+.no-data-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #9ca3af;
+    font-size: 1.125rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    border: 1px dashed #d1d5db;
+    margin: 2rem 0;
 }
