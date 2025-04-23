@@ -21,8 +21,18 @@ function executePythonScript(scriptPath, args = []) {
         console.log(`Executing Python script: ${scriptPath}`);
         console.log(`With arguments: ${args.join(', ')}`);
 
-        // Use the specific Python path for macOS
-        const pythonExecutable = '/usr/local/bin/python3';
+        let pythonExecutable;
+        const platform = os.platform();
+
+        if (platform === 'win32') {
+            const userHome = process.env.USERPROFILE;
+            pythonExecutable = `${userHome}\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe`;
+        } else {
+            pythonExecutable = '/usr/local/bin/python3';
+        }
+
+        console.log(`Resolved Python executable path: ${pythonExecutable}`);
+
 
         // Spawn Python process
         const pythonProcess = spawn(pythonExecutable, [scriptPath, ...args]);

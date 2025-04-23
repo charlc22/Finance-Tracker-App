@@ -121,9 +121,15 @@ export const getAnalysisResults = async (statementId) => {
     }
 };
 
+export const deleteBankStatement = async (statementId) => {
+    const response = await api.delete(`/bankStatements/statements/${statementId}`);
+    return response.data;
+};
+
 export default {
     uploadBankStatement,
     fetchBankStatements,
     analyzeBankStatement,
-    getAnalysisResults
+    getAnalysisResults,
+    deleteBankStatement
 };

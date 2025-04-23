@@ -24,6 +24,7 @@ const BudgetDisplay = ({ statements }) => {
         'Utilities': '#9966FF',
         'Travel & Transportation': '#FF9F40',
         'Entertainment & Recreation': '#8AC926',
+        'Convenience': '#44963f',
         'Health & Fitness': '#FF6B6B',
         'Retail & Clothing': '#1982C4',
         'Automotive & Gas': '#6A4C93',
@@ -222,7 +223,7 @@ const BudgetDisplay = ({ statements }) => {
 
     return (
         <section className="section">
-            <h2>Your Spending Summary</h2>
+            <h1><center>Your Spending Summary</center></h1>
 
             {/* Statement selector */}
             {statements && statements.filter(s => s.isProcessed && (selectedBank === 'all' || s.bankName === selectedBank)).length > 0 && (
@@ -258,7 +259,7 @@ const BudgetDisplay = ({ statements }) => {
                          marginTop: '15px',
                          marginBottom: '20px'
                      }}>
-                    <h3>{selectedStatement.bankName} Statement</h3>
+                    <h3>{selectedStatement.bankName} Technical Info</h3>
                     <p>
                         <strong>Statement: </strong>{selectedStatement.title}<br />
                         <strong>Uploaded: </strong>{new Date(selectedStatement.uploadDate).toLocaleDateString()}<br />

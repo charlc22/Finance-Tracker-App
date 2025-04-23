@@ -188,9 +188,10 @@
 }
 
 .file-upload-label {
-    display: flex;
+    display: inline-flex; /* shrink-wrap content */
     align-items: center;
     cursor: pointer;
+    padding: 0; /* remove any extra spacing unless needed */
 }
 
 .file-input-hidden {
@@ -641,4 +642,16 @@
     .statements-grid {
         grid-template-columns: 1fr;
     }
+}
+.delete-button {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #dc2626;
+    color: white;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #b91c1c;
 }

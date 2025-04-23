@@ -8,7 +8,8 @@ import {
     uploadBankStatement,
     fetchBankStatements,
     analyzeBankStatement,
-    getAnalysisResults
+    getAnalysisResults,
+    deleteBankStatement
 } from '../../services/bankStatementService.js';
 
 const Dashboard = () => {
@@ -96,6 +97,17 @@ const Dashboard = () => {
         }
     };
 
+    const handleDeleteStatement = async (statementId) => {
+        if (!window.confirm("Are you sure you want to delete this statement?")) return;
+        try {
+            await deleteBankStatement(statementId);
+            await loadStatements(); // Refresh the list
+        } catch (error) {
+            console.error('Error deleting statement:', error);
+        }
+    };
+
+
     const processStatement = async (statementId) => {
         setProcessing(true);
         try {
@@ -176,42 +188,7 @@ const Dashboard = () => {
 
             {activeTab === 'upload' && (
                 <>
-                    <section className="section">
-                        <h2 className="text-2xl font-bold mb-6">Track Your Expenses</h2>
-                        <form onSubmit={handleExpenseSubmit} className="styled-form">
-                            <input
-                                type="text"
-                                id="expenseName"
-                                placeholder="Expense Name"
-                                value={newExpense.name}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <input
-                                type="number"
-                                id="expenseAmount"
-                                placeholder="Amount"
-                                value={newExpense.amount}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <select
-                                id="expenseCategory"
-                                value={newExpense.category}
-                                onChange={handleInputChange}
-                            >
-                                <option value="food">Food</option>
-                                <option value="rent">Rent</option>
-                                <option value="utilities">Utilities</option>
-                                <option value="clothes">Clothing</option>
-                                <option value="vehicle">Vehicle</option>
-                                <option value="other">Other</option>
-                            </select>
-                            <button type="submit" className="styled-button">
-                                Add Expense
-                            </button>
-                        </form>
-                    </section>
+
 
                     <section className="section">
                         <h2 className="text-2xl font-bold mb-6">Your Bank Statements</h2>
@@ -231,10 +208,10 @@ const Dashboard = () => {
                                         <Upload size={20} className="mr-2" />
                                         Choose PDF File
                                     </div>
-                                    <span className="file-upload-text">
-                                        Supported: Wells Fargo, Chase, Bank of America
-                                    </span>
                                 </label>
+                                <span className="file-upload-text">
+                                        Supported Banks: Wells Fargo
+                                    </span>
                             </div>
 
                             {uploading && (
@@ -281,6 +258,12 @@ const Dashboard = () => {
                                                     </div>
 
                                                     <div className="statement-actions">
+                                                        <button
+                                                            onClick={() => handleDeleteStatement(statement._id)}
+                                                            className="delete-button"
+                                                        >
+                                                            Delete
+                                                        </button>
                                                         {!statement.isProcessed ? (
                                                             <button
                                                                 onClick={() => processStatement(statement._id)}
@@ -297,6 +280,7 @@ const Dashboard = () => {
                                                                 View Analysis
                                                             </button>
                                                         )}
+
                                                     </div>
                                                 </div>
                                             </div>
