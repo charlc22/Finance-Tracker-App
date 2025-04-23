@@ -3,6 +3,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
+import logo from '../../assets/logo/logo-no-background.png';
+import './Navbar.css';
+
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -10,8 +13,10 @@ const Navbar = () => {
     return (
         <nav>
             <Link to="/" className="navbar-brand">
-                Wallet Wise
+                <img src={logo} alt="logo-no-background.png" className="navbar-logo" />
+
             </Link>
+
             <div className="navbar-links">
                 <Link to="/about" className="navbar-link">About</Link>
                 {user ? (

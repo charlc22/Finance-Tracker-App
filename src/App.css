@@ -1,5 +1,5 @@
 html, body {
-  background-color: #1f2937 !important;
+  background-color: transparent !important;
   min-height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -25,6 +25,37 @@ html, body {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.app-wrapper{
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: transparent !important;
+}
+
+.glow-overlay {                 /* the gradient on the complete webapp */
+  position: fixed;
+  top: 0;
+  left: 0; /* this is going to show the glow on the left side */
+           /* if you want to do the right then change left --> right */
+  width:70vw;
+  height: 80vw;
+  background: radial-gradient(
+          circle at left center,
+          rgba(10, 170, 255, 0.25),
+          transparent 70%
+  );
+  filter: blur(40px);
+  z-index: 0;
+  pointer-events: none;     /* this is going to make sure not block your clicks */
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;       /* this is going to make sure everything stays on the top */
+  padding: 2rem;
+  background-color: transparent !important;
 }
 
 .App-link {
