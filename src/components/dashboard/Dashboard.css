@@ -7,6 +7,8 @@
 }
 
 .welcome-header {
+    position: relative;
+    overflow: hidden;
     margin-bottom: 2rem;
     padding: 1.5rem;
     background-color: #1f2937;
@@ -16,12 +18,17 @@
 }
 
 .welcome-header h2 {
+    position: relative;
+    z-index: 1;
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
 
 .welcome-message {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
     color: #ef4444;
     font-weight: 500;
     font-size: 1.125rem;
@@ -654,4 +661,21 @@
 
 .delete-button:hover {
     background-color: #b91c1c;
+}
+
+.cursor-glow {
+    position: absolute;
+    top: -50px;
+    left: -50px;
+    width: 100px; /* diameter of the glow */
+    height: 100px;
+    pointer-events: none;
+    background: radial-gradient(
+            circle,
+            rgba(70, 130, 180, 0.6) 20%,
+            transparent 60%
+    );
+    filter: blur(8px);
+    transform: translate(-50%, -50%) scale(0);
+    /* transition is applied in JS for that trailing effect */
 }

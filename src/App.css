@@ -39,11 +39,11 @@ html, body {
   top: 0;
   left: 0; /* this is going to show the glow on the left side */
            /* if you want to do the right then change left --> right */
-  width:70vw;
-  height: 80vw;
+  width:80vw;
+  height: 110vw;
   background: radial-gradient(
           circle at left center,
-          rgba(10, 170, 255, 0.25),
+          rgba(90, 170, 255, 0.40),
           transparent 70%
   );
   filter: blur(40px);
