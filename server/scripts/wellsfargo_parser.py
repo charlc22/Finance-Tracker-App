@@ -23,18 +23,19 @@ finance_categories = {
     "E-Commerce": ["Amazon","AMZN", "eBay", "Alibaba", "Temu", "Wayfair", "Etsy", "Walmart Online", "Best Buy Online", "Target Online"],
     "Subscriptions & Streaming": ["Blizzard","CLOUDFLARE","Netflix", "Hulu", "Disney+", "HBO Max", "Spotify", "Apple Music", "Apple", "YouTube Premium", "Youtubepre", "Audible", "Amazon Prime", "PlayStation Plus", "Xbox Game Pass", "Adobe", "Dropbox", "Google One", "iCloud"],
     "Groceries": ["SHOPRITE","Walmart", "WAL-MART", "Kroger", "Safeway", "Whole Foods", "Aldi", "Trader Joe's", "Publix", "Costco", "Sam's Club", "Lidl"],
+    "Convenience": ["WAWA","7-Eleven","7Eleven","Sheets","QuickCheck"],
     "Restaurants & Fast Food": ["DOORDASH","FOODA","McDonald's", "Burger King", "Subway", "Chipotle", "Starbucks", "Dunkin", "KFC", "Taco Bell", "Domino's", "Chick-fil-A", "Pizza Hut", "Popeyes", "Wendy's", "WENDYS", "Five Guys", "HIBACHI", "Grill"],
     "Utilities": ["Duke Energy", "Con Edison", "PG&E", "National Grid", "Xfinity", "Spectrum", "Verizon", "AT&T", "T-Mobile", "Cox Communications"],
     "Travel & Transportation": ["Uber", "Mta", "njt", "Lyft", "Delta Airlines", "United Airlines", "American Airlines", "Expedia", "Airbnb", "Booking.com", "Marriott", "Hilton", "Hertz", "Enterprise Rent-A-Car", "Amtrak", "Greyhound"],
-    "Entertainment & Recreation": ["DICE","AMC","BAR","Steam", "YESTERCADES", "Dave & buster's","Regal Cinemas", "AMC Theatres", "Bowlero", "Dave & Buster's", "Escape Rooms", "Concert Tickets", "Eventbrite", "StubHub", "Sports Tickets"],
+    "Entertainment & Recreation": ["DICE","AMC","BAR","Steam","YESTERCADES","CINEMARK", "Dave & buster's","Regal Cinemas", "AMC Theatres", "Bowlero", "Dave & Buster's", "Escape Rooms", "Concert Tickets", "Eventbrite", "StubHub", "Sports Tickets"],
     "Health & Fitness": ["CVS", "Walgreens", "GNC", "Vitamin Shoppe", "Peloton", "Planet Fitness", "LA Fitness", "24 Hour Fitness", "Equinox", "Anytime Fitness", "MyFitnessPal", "Fitbit"],
     "Retail & Clothing": ["Nike", "Adidas", "Zara", "H&M", "Nordstrom", "Macy's", "Bloomingdale's", "Urban Outfitters", "Uniqlo", "Old Navy", "Banana Republic", "Gap", "Foot Locker","UNIQUE"],
     "Automotive & Gas": ["Ezpass","MOTOR VEHICLE","Shell", "Chevron", "ExxonMobil", "BP", "Tesla Supercharger", "AutoZone", "O'Reilly Auto Parts", "Pep Boys", "CarMax", "Toyota Service", "ROCKAUTO"],
     "Education & Learning": ["Udemy", "Coursera", "Skillshare", "LinkedIn Learning", "MasterClass", "Khan Academy", "Duolingo", "Quizlet", "Pearson", "Chegg", "COMPTIA", "University"],
-    "Home Improvement": ["Home Depot", "Lowe's", "Ace Hardware", "Menards", "IKEA", "Overstock"],
+    "Home Improvement": ["Home Depot", "Lowe's", "LOWES","Ace Hardware", "Menards", "IKEA", "Overstock"],
     "Insurance": ["Geico", "Progressive", "State Farm", "Allstate", "Liberty Mutual", "Nationwide", "USAA", "MetLife"],
     "Charity & Donations": ["Red Cross", "GoFundMe", "UNICEF", "Feeding America", "Salvation Army", "WWF", "Charity: Water"],
-    "Financial Services & Banks": ["ATM","Capital One","Vanguard","Acorns","Bank of America", "Chase", "Wells Fargo", "Citibank", "PayPal", "Venmo", "Cash App", "Western Union", "Robinhood", "E-Trade", "Fidelity", "Charles Schwab", "Zelle"],
+    "Financial Services & Banks": ["ATM","Capital One","Vanguard","Acorns","Bank of America", "Chase", "Wells Fargo", "Citibank", "PayPal", "Venmo", "Cash App", "Western Union", "Robinhood", "E-Trade", "Fidelity", "Charles Schwab", "Zelle to","TRANSFER to"],
     "Other": ["Post Office", "USPS", "FedEx", "UPS", "MoneyGram"]
 }
 

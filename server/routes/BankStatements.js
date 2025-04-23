@@ -271,4 +271,16 @@ router.get('/analysis/:id', auth, async (req, res) => {
     }
 });
 
+router.delete('/statements/:id', async (req, res) => {
+    const statementId = req.params.id;
+    try {
+        console.log('Deleting statement with ID:', statementId);
+        await BankStatement.findByIdAndDelete(statementId);
+        res.status(200).json({ message: 'Statement deleted successfully' });
+    } catch (err) {
+        console.error('Failed to delete statement:', err);
+        res.status(500).json({ error: 'Failed to delete statement' });
+    }
+});
+
 module.exports = router;
