@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import BudgetDisplay from './BudgetDisplay';
 import StatementComparison from './StatementComparison'; // Import the comparison component
@@ -28,6 +28,30 @@ const Dashboard = () => {
 
     useEffect(() => {
         loadStatements();
+    }, []);
+
+    const headerRef = useRef(null);
+    // EFFECT TO MOVE THE GLOW ON MOUSEMOVE
+    useEffect(() => {
+        const header = headerRef.current;
+        const glow   = header.querySelector('.cursor-glow');
+            const onMove = e => {
+            const { left, top } = header.getBoundingClientRect();
+            const x = e.clientX - left;
+            const y = e.clientY - top;
+            glow.style.transition = 'transform 0.1s ease-out';
+            glow.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+            };
+        const onLeave = () => {
+            glow.style.transition = 'transform 0.1s ease-out';
+            glow.style.transform  = 'translate(-50%, -50%) scale(0)';
+            };
+        header.addEventListener('mousemove', onMove);
+        header.addEventListener('mouseleave', onLeave);
+        return () => {
+            header.removeEventListener('mousemove', onMove);
+            header.removeEventListener('mouseleave', onLeave);
+            };
     }, []);
 
     const loadStatements = async () => {
@@ -171,9 +195,10 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            <div className="welcome-header">
+            <div className="welcome-header" ref={headerRef}>
                 <h2 className="text-2xl font-bold">Your Profile</h2>
                 <p className="welcome-message">Welcome back, {user?.name || 'User'}!</p>
+                <div className="cursor-glow" />
             </div>
 
             {renderTabs()}

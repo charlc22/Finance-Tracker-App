@@ -84,7 +84,7 @@ def parse_transactions(text):
 
         # Determine transaction type (credit or debit)
         transaction_type = "debit"  # Default to debit
-        if any(phrase in description.upper() for phrase in ["ZELLE FROM", "PAYROLL", "DEPOSIT"]):
+        if any(phrase in description.upper() for phrase in ["ZELLE FROM", "PAYROLL", "DEPOSIT","Direct Dep","DIRECT DEPOSIT"]):
             transaction_type = "credit"
 
         parsed_transactions.append({

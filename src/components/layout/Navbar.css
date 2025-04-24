@@ -2,10 +2,15 @@
 nav {
     background-color: #1a1d29;
     color: white;
-    padding: 1rem;
+    padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    width: 100vw;             /* Full width */
+    box-sizing: border-box;   /* Include padding inside width */
+    position: relative;
+    left: 0;
 }
 
 .navbar-brand {
@@ -47,4 +52,11 @@ nav {
 
 .logout-button:hover {
     background-color: #c1121f;
+}
+
+.navbar-logo {
+    width: 150px;       /* Adjust size */
+    height: auto;       /* auto aspect ratio */
+    display: block;
+    margin: 0 auto;     /* centers to the page */
 }

@@ -1,7 +1,7 @@
 /* Login.css */
 .login-page {
     min-height: 75vh !important;
-    background-color: #1f2937 !important;
+    /*background-color: #1f2937 !important;*/
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;

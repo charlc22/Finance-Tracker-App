@@ -10,30 +10,39 @@ import PrivateRoute from './components/auth/PrivateRoute';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import About from './components/pages/About'; // Import the About component
+import './App.css';
 
 function App() {
     return (
         <AuthProvider>
             <Router>
                 <div className="flex flex-col min-h-screen bg-gray-50">
+
+                    {/* ⬇️ Move Navbar outside */}
                     <Navbar />
-                    <main className="flex-grow w-full">
-                        <Routes>
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/register" element={<Register />} />
-                            <Route path="/about" element={<About />} /> {/* Add About route */}
-                            <Route
-                                path="/dashboard"
-                                element={
-                                    <PrivateRoute>
-                                        <Dashboard />
-                                    </PrivateRoute>
-                                }
-                            />
-                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                        </Routes>
-                    </main>
-                    <Footer />
+
+                    <div className="app-wrapper">
+                        <div className="glow-overlay"/>
+                        <div className="main-content">
+                            <main className="flex-grow w-full">
+                                <Routes>
+                                    <Route path="/login" element={<Login/>}/>
+                                    <Route path="/register" element={<Register/>}/>
+                                    <Route path="/about" element={<About/>}/>
+                                    <Route
+                                        path="/dashboard"
+                                        element={
+                                            <PrivateRoute>
+                                                <Dashboard/>
+                                            </PrivateRoute>
+                                        }
+                                    />
+                                    <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
+                                </Routes>
+                            </main>
+                            <Footer/>
+                        </div>
+                    </div>
                 </div>
             </Router>
         </AuthProvider>
